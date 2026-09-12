@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Smart Prep Services",
+    "slug": "sps-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.smartprepservices.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Used to photograph received packages and damage for shipment records.",
+        "NSPhotoLibraryUsageDescription": "Used to attach photos to receiving and damage reports."
+      }
+    },
+    "android": {
+      "package": "com.smartprepservices.mobile",
+      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE"]
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Used to attach photos to receiving and damage reports.",
+          "cameraPermission": "Used to photograph received packages and damage for shipment records."
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "http://192.168.100.6:8000/api"
+    }
+  }
+}
