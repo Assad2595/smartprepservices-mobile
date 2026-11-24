@@ -5,6 +5,7 @@ import { api } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { colors } from '../config';
 import { dateLabel, serviceTypeLabel } from '../shared/format';
+import { CompanyFilterBanner } from '../shared/CompanyFilterBanner';
 import { Card, Chip, FilterChips, HeaderAction, SearchInput, StatusBadge } from '../shared/ui';
 
 const TYPE_FILTERS = [
@@ -41,11 +42,17 @@ export function ShipmentsScreen() {
   const [type, setType] = useState('');
   const [status, setStatus] = useState<string>(route.params?.status ?? 'OPEN');
   const [search, setSearch] = useState('');
+  // Opened from a company: only that company's shipments, until cleared.
+  const [companyId, setCompanyId] = useState<number | null>(route.params?.companyId ?? null);
 
   // A dashboard tile can open this tab pre-filtered.
   useEffect(() => {
     if (route.params?.status !== undefined) setStatus(route.params.status);
   }, [route.params?.status]);
+
+  useEffect(() => {
+    if (route.params?.companyId !== undefined) setCompanyId(route.params.companyId);
+  }, [route.params?.companyId]);
 
   useLayoutEffect(() => {
     nav.setOptions({
@@ -59,18 +66,19 @@ export function ShipmentsScreen() {
   const load = useCallback(async () => {
     setRefreshing(true);
     try {
-      const res = await api.get('/shipments', { params: { service_type: type || undefined, status: status || undefined, search: search || undefined } });
+      const res = await api.get('/shipments', { params: { service_type: type || undefined, status: status || undefined, search: search || undefined, company_id: companyId ?? undefined } });
       setItems(res.data.data?.data || res.data.data || []);
     } finally {
       setRefreshing(false);
     }
-  }, [type, status, search]);
+  }, [type, status, search, companyId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.surface }}>
       <SearchInput value={search} onChangeText={setSearch} onSubmit={load} placeholder="Reference, tracking, company or product…" />
+      {companyId !== null && <CompanyFilterBanner name={route.params?.companyName} onClear={() => setCompanyId(null)} />}
       <FilterChips options={TYPE_FILTERS} value={type} onChange={setType} />
       <FilterChips options={STATUS_FILTERS} value={status} onChange={setStatus} />
       <FlatList

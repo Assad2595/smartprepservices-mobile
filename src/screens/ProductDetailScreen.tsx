@@ -4,8 +4,9 @@ import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/nativ
 import { api } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { colors, storageUrl } from '../config';
+import { AdjustStockSheet, HistoryEntry, Stock, StockHistory, StockTiles } from '../inventory/stock';
 import { dateLabel } from '../shared/format';
-import { Chip, HeaderAction, KeyValue, PhotoGrid, Section } from '../shared/ui';
+import { Chip, HeaderAction, KeyValue, PhotoGrid, PrimaryButton, Section } from '../shared/ui';
 
 export function ProductDetailScreen() {
   const route = useRoute<any>();
@@ -14,6 +15,11 @@ export function ProductDetailScreen() {
   const { can } = useAuth();
   const [product, setProduct] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [adjusting, setAdjusting] = useState(false);
+
+  // A count correction returns the new figures, so the screen updates without another fetch.
+  const applyAdjustment = (result: { stock: Stock; free_to_send: number; history: HistoryEntry[] }) =>
+    setProduct((p: any) => ({ ...p, stock: result.stock, free_to_send: result.free_to_send, history: result.history, has_stock: true }));
 
   const load = useCallback(async () => {
     setRefreshing(true);
@@ -53,6 +59,13 @@ export function ProductDetailScreen() {
         {!!product.company?.name && <Chip label={product.company.name} tone="muted" />}
       </View>
 
+      <Section title="Stock">
+        <StockTiles stock={product.stock} freeToSend={product.free_to_send} />
+        {can('products.adjust_stock') && (
+          <PrimaryButton title="Adjust stock" variant="outline" onPress={() => setAdjusting(true)} />
+        )}
+      </Section>
+
       <Section title="Photos">
         <PhotoGrid photos={(product.images || []).map((img: any) => ({ id: img.id, url: storageUrl(img.path) }))} />
       </Section>
@@ -76,11 +89,24 @@ export function ProductDetailScreen() {
         </Section>
       )}
 
+      <Section title="Stock history">
+        <StockHistory entries={product.history || []} onOpenShipment={(shipmentId) => nav.navigate('ShipmentDetail', { id: shipmentId })} />
+      </Section>
+
       <Section title="Record">
         <KeyValue label="Created" value={dateLabel(product.created_at, true)} />
         <KeyValue label="Updated" value={dateLabel(product.updated_at, true)} />
       </Section>
       <View style={{ height: 32 }} />
+
+      <AdjustStockSheet
+        productId={product.id}
+        title={`${product.reference_code} · ${product.title}`}
+        freeToSend={product.free_to_send ?? 0}
+        visible={adjusting}
+        onClose={() => setAdjusting(false)}
+        onDone={applyAdjustment}
+      />
     </ScrollView>
   );
 }

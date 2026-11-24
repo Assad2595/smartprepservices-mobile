@@ -5,6 +5,7 @@ import { api } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { colors } from '../config';
 import { dateLabel, money } from '../shared/format';
+import { CompanyFilterBanner } from '../shared/CompanyFilterBanner';
 import { Card, FilterChips, HeaderAction, SearchInput, StatusBadge } from '../shared/ui';
 
 const STATUS_FILTERS = [
@@ -25,10 +26,16 @@ export function InvoicesScreen() {
   const [status, setStatus] = useState<string>(route.params?.status ?? '');
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  // Opened from a company: only that company's invoices, until cleared.
+  const [companyId, setCompanyId] = useState<number | null>(route.params?.companyId ?? null);
 
   useEffect(() => {
     if (route.params?.status !== undefined) setStatus(route.params.status);
   }, [route.params?.status]);
+
+  useEffect(() => {
+    if (route.params?.companyId !== undefined) setCompanyId(route.params.companyId);
+  }, [route.params?.companyId]);
 
   useLayoutEffect(() => {
     nav.setOptions({
@@ -41,20 +48,21 @@ export function InvoicesScreen() {
     try {
       // "Overdue" is a fact about the due date, not a status — the API takes it as its own flag.
       const params = status === 'OVERDUE'
-        ? { overdue: '1', search: search || undefined }
-        : { status: status || undefined, search: search || undefined };
+        ? { overdue: '1', search: search || undefined, company_id: companyId ?? undefined }
+        : { status: status || undefined, search: search || undefined, company_id: companyId ?? undefined };
       const res = await api.get('/invoices', { params });
       setItems(res.data.data?.data || res.data.data || []);
     } finally {
       setRefreshing(false);
     }
-  }, [status, search]);
+  }, [status, search, companyId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.surface }}>
       <SearchInput value={search} onChangeText={setSearch} onSubmit={load} placeholder="Invoice #, company or shipment…" />
+      {companyId !== null && <CompanyFilterBanner name={route.params?.companyName} onClear={() => setCompanyId(null)} />}
       <FilterChips options={STATUS_FILTERS} value={status} onChange={setStatus} />
       <FlatList
         contentContainerStyle={{ padding: 16, paddingTop: 4 }}

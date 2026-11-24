@@ -75,7 +75,6 @@ export const statusColors: Record<string, string> = {
   PARTIALLY_PAID: '#0891B2',
   PAID: '#15803D',
   VOID: '#B91C1C',
-  PENDING: '#64748B',
   SUBMITTED: '#D97706',
   VERIFIED: '#15803D',
   REJECTED: '#B91C1C',

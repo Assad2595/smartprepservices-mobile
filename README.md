@@ -12,7 +12,7 @@ Three env files under `env/`. Pick one with `APP_ENV`; the npm scripts do that f
 | APP_ENV | File            | Points at                                 |
 |---------|-----------------|-------------------------------------------|
 | `local` | `env/local.env` | Laravel on this machine (`php artisan serve`) |
-| `dev`   | `env/dev.env`   | https://dev.smartprepservices.com         |
+| `dev`   | `env/dev.env`   | https://portal-dev.smartprepservices.com  |
 | `prod`  | `env/prod.env`  | https://portal.smartprepservices.com      |
 
 Each file has the same keys — `API_URL`, `ENV_LABEL`, `APP_DISPLAY_NAME`,

@@ -35,11 +35,71 @@ export const api = axios.create({
   headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
 });
 
+// A session swaps its token for a fresh one (POST /refresh, which kills the old
+// token). Anything sent while that happens waits for it, so it carries the new
+// token instead of one that is about to stop working.
+let refreshing: Promise<unknown> | null = null;
+
 api.interceptors.request.use(async (config) => {
+  // `skipRefreshWait` is for the refresh's own fallback request, which must not wait for itself.
+  if (refreshing && config.url !== '/refresh' && !(config as any).skipRefreshWait) await refreshing.catch(() => undefined);
   const token = await getToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
+
+let unauthorizedHandler: (() => void) | null = null;
+
+/** Called when the server says the token is no longer valid (expired, revoked, user switched off). */
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  unauthorizedHandler = handler;
+}
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const config = error?.config;
+    if (error?.response?.status === 401 && config && config.url !== '/login') {
+      // A request that left just before a refresh finished carries the old,
+      // now dead, token: try it once more with the current one.
+      const current = await getToken();
+      if (current && config.headers?.Authorization !== `Bearer ${current}` && !config.__retried) {
+        config.__retried = true;
+        return api(config);
+      }
+      unauthorizedHandler?.();
+    }
+    return Promise.reject(error);
+  },
+);
+
+/**
+ * Starts a new 5-day session: asks the server for a fresh token and the user's
+ * current permissions, and stores the token. One at a time, because the first
+ * call kills the old token and a second would be sent with a dead one.
+ */
+export function refreshSession(): Promise<any> {
+  if (!refreshing) {
+    refreshing = api
+      .post('/refresh')
+      .then(async (res) => {
+        const data = res.data?.data;
+        if (data?.token) await setToken(data.token);
+        return data;
+      })
+      .catch(async (e) => {
+        // A server that has not been updated yet has no /refresh: keep the token
+        // and just load the session, so the app still works against it.
+        if (e?.response?.status !== 404) throw e;
+        const res = await api.get('/me', { skipRefreshWait: true } as any);
+        return res.data?.data;
+      })
+      .finally(() => {
+        refreshing = null;
+      });
+  }
+  return refreshing;
+}
 
 export type FilePart = { uri: string; fileName?: string | null; mimeType?: string | null };
 

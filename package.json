@@ -19,7 +19,9 @@
     "apk:prod": "cross-env APP_ENV=prod eas build --platform android --profile prod --local",
     "build:local": "cross-env APP_ENV=local eas build --platform android --profile local",
     "build:dev": "cross-env APP_ENV=dev eas build --platform android --profile dev",
-    "build:prod": "cross-env APP_ENV=prod eas build --platform android --profile prod"
+    "build:prod": "cross-env APP_ENV=prod eas build --platform android --profile prod",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src App.tsx --ext .ts,.tsx"
   },
   "dependencies": {
     "@expo/metro-runtime": "~4.0.1",
@@ -44,6 +46,8 @@
     "@babel/core": "^7.25.0",
     "@types/react": "~18.3.12",
     "cross-env": "^10.1.0",
+    "eslint": "^8.57.1",
+    "eslint-config-expo": "~8.0.1",
     "typescript": "~5.3.3"
   }
 }

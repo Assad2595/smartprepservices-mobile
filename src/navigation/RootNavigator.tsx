@@ -27,6 +27,11 @@ import { PaymentDetailScreen } from '../screens/PaymentDetailScreen';
 import { PaymentFormScreen } from '../screens/PaymentFormScreen';
 import { TasksScreen } from '../screens/TasksScreen';
 import { TaskFormScreen } from '../screens/TaskFormScreen';
+import { CompaniesScreen } from '../screens/CompaniesScreen';
+import { CompanyDetailScreen } from '../screens/CompanyDetailScreen';
+import { UsersScreen } from '../screens/UsersScreen';
+import { UserDetailScreen } from '../screens/UserDetailScreen';
+import { MoreScreen } from '../screens/MoreScreen';
 import { colors } from '../config';
 
 const headerOptions = {
@@ -58,13 +63,14 @@ function MainTabs() {
       }}
     >
       <Tabs.Screen name="Home" component={DashboardScreen} />
-      {can('tasks.view') && <Tabs.Screen name="Tasks" component={TasksScreen} />}
+      {can('products.view') && <Tabs.Screen name="Products" component={ProductsScreen} options={{ title: 'Inventory' }} />}
       {(can('shipments.view') || can('packages.view') || can('master_shipments.view')) && (
         <Tabs.Screen name="Shipments" component={ShipmentsScreen} />
       )}
-      {can('products.view') && <Tabs.Screen name="Products" component={ProductsScreen} />}
       {can('invoices.view') && <Tabs.Screen name="Invoices" component={InvoicesScreen} />}
       {can('payments.view') && <Tabs.Screen name="Payments" component={PaymentsScreen} />}
+      {/* Companies, Users and Tasks live behind More, so the bar stays at six tabs. */}
+      <Tabs.Screen name="More" component={MoreScreen} />
     </Tabs.Navigator>
   );
 }
@@ -108,8 +114,15 @@ export function RootNavigator() {
             <Stack.Screen name="InvoiceDetail" component={InvoiceDetailScreen} options={{ title: 'Invoice', ...headerOptions }} />
             <Stack.Screen name="InvoiceForm" component={InvoiceFormScreen} options={{ title: 'New invoice', ...modalScreenOptions }} />
 
-            {/* Tasks */}
+            {/* Tasks (opened from More) */}
+            <Stack.Screen name="TaskList" component={TasksScreen} options={{ title: 'Tasks', ...headerOptions }} />
             <Stack.Screen name="TaskForm" component={TaskFormScreen} options={{ title: 'Task', ...modalScreenOptions }} />
+
+            {/* Companies and users (opened from More) */}
+            <Stack.Screen name="Companies" component={CompaniesScreen} options={{ title: 'Companies', ...headerOptions }} />
+            <Stack.Screen name="CompanyDetail" component={CompanyDetailScreen} options={{ title: 'Company', ...headerOptions }} />
+            <Stack.Screen name="Users" component={UsersScreen} options={{ title: 'Users', ...headerOptions }} />
+            <Stack.Screen name="UserDetail" component={UserDetailScreen} options={{ title: 'User', ...headerOptions }} />
 
             {/* Payments */}
             <Stack.Screen name="PaymentDetail" component={PaymentDetailScreen} options={{ title: 'Payment', ...headerOptions }} />
