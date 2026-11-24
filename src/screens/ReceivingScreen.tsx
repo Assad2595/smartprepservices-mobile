@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { api, uploadPhoto } from '../api/client';
+import { api, errorMessage, uploadPhoto } from '../api/client';
 import { colors, storageUrl } from '../config';
 import { promptPhotoSource } from '../shared/pickPhoto';
 import { FormField, PhotoGrid, PrimaryButton, Section } from '../shared/ui';
+import { showAlert } from '../shared/alert';
 
 export function ReceivingScreen() {
   const route = useRoute<any>();
@@ -44,7 +45,7 @@ export function ReceivingScreen() {
       });
       setRecord(res.data.data);
     } catch (e: any) {
-      Alert.alert('Failed', e?.response?.data?.message || e.message);
+      showAlert('Failed', errorMessage(e));
     } finally {
       setBusy(false);
     }
@@ -56,7 +57,7 @@ export function ReceivingScreen() {
         const res = await uploadPhoto(`/shipments/${shipmentId}/receiving/${record.id}/photos`, photo);
         setPhotos((prev) => [...prev, res.data.data]);
       } catch (e: any) {
-        Alert.alert('Upload failed', e?.response?.data?.message || e.message);
+        showAlert('Upload failed', errorMessage(e));
       }
     });
   }
@@ -67,7 +68,7 @@ export function ReceivingScreen() {
         <Text style={styles.title}>Receiving recorded</Text>
         <Text style={styles.meta}>Attach photos of the received packages, then finish.</Text>
         <Section title="Photos">
-          <PhotoGrid photos={photos.map((p) => ({ id: p.id, url: storageUrl(p.fileAsset?.path) }))} />
+          <PhotoGrid photos={photos.map((p) => ({ id: p.id, url: storageUrl(p.file_asset?.path) }))} />
         </Section>
         <PrimaryButton title="+ Add photo" onPress={addPhoto} variant="outline" />
         <PrimaryButton title="Done" onPress={() => nav.goBack()} />

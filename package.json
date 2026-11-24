@@ -6,19 +6,20 @@
   "scripts": {
     "start": "cross-env APP_ENV=local expo start",
     "start:local": "cross-env APP_ENV=local expo start",
-    "start:dev": "cross-env APP_ENV=development expo start",
-    "start:prod": "cross-env APP_ENV=production expo start",
+    "start:dev": "cross-env APP_ENV=dev expo start",
+    "start:prod": "cross-env APP_ENV=prod expo start",
+    "web": "cross-env APP_ENV=local expo start --web",
     "android": "cross-env APP_ENV=local expo start --android",
     "ios": "cross-env APP_ENV=local expo start --ios",
-    "web": "cross-env APP_ENV=local expo start --web",
     "config:local": "cross-env APP_ENV=local expo config --type public",
-    "config:dev": "cross-env APP_ENV=development expo config --type public",
-    "config:prod": "cross-env APP_ENV=production expo config --type public",
-    "prebuild:local": "cross-env APP_ENV=local expo prebuild --platform android --clean",
+    "config:dev": "cross-env APP_ENV=dev expo config --type public",
+    "config:prod": "cross-env APP_ENV=prod expo config --type public",
     "apk:local": "cross-env APP_ENV=local eas build --platform android --profile local --local",
+    "apk:dev": "cross-env APP_ENV=dev eas build --platform android --profile dev --local",
+    "apk:prod": "cross-env APP_ENV=prod eas build --platform android --profile prod --local",
     "build:local": "cross-env APP_ENV=local eas build --platform android --profile local",
-    "build:dev": "cross-env APP_ENV=development eas build --platform android --profile development",
-    "build:prod": "cross-env APP_ENV=production eas build --platform android --profile production"
+    "build:dev": "cross-env APP_ENV=dev eas build --platform android --profile dev",
+    "build:prod": "cross-env APP_ENV=prod eas build --platform android --profile prod"
   },
   "dependencies": {
     "@expo/metro-runtime": "~4.0.1",

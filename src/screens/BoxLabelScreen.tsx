@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { api } from '../api/client';
+import { api, errorMessage } from '../api/client';
 import { colors } from '../config';
 import { FormField, PrimaryButton } from '../shared/ui';
+import { showAlert } from '../shared/alert';
 
 export function BoxLabelScreen() {
   const route = useRoute<any>();
   const nav = useNavigation<any>();
-  const { shipmentId, cartonId, cartonNumber } = route.params;
+  const { shipmentId, boxId, boxNumber } = route.params;
 
   const [labelCode, setLabelCode] = useState('');
   const [busy, setBusy] = useState(false);
@@ -16,12 +17,12 @@ export function BoxLabelScreen() {
   async function submit() {
     setBusy(true);
     try {
-      await api.post(`/shipments/${shipmentId}/cartons/${cartonId}/box-label`, {
+      await api.post(`/shipments/${shipmentId}/boxes/${boxId}/box-label`, {
         label_code: labelCode || undefined,
       });
       nav.goBack();
     } catch (e: any) {
-      Alert.alert('Failed', e?.response?.data?.message || e.message);
+      showAlert('Failed', errorMessage(e));
     } finally {
       setBusy(false);
     }
@@ -29,8 +30,8 @@ export function BoxLabelScreen() {
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.title}>Apply box label — Carton #{cartonNumber}</Text>
-      <Text style={styles.meta}>Confirm the label has been physically applied to this carton.</Text>
+      <Text style={styles.title}>Apply box label — Box #{boxNumber}</Text>
+      <Text style={styles.meta}>Confirm the label has been physically applied to this box.</Text>
       <FormField label="Label code (optional)" value={labelCode} onChangeText={setLabelCode} autoCapitalize="characters" />
       <PrimaryButton title="Confirm applied" onPress={submit} busy={busy} />
     </View>

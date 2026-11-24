@@ -14,22 +14,24 @@
         "APP_ENV": "local"
       }
     },
-    "development": {
+    "dev": {
       "distribution": "internal",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
       },
       "env": {
-        "APP_ENV": "development"
+        "APP_ENV": "dev"
       }
     },
-    "production": {
+    "prod": {
       "distribution": "internal",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
       },
       "env": {
-        "APP_ENV": "production"
+        "APP_ENV": "prod"
       }
     }
   }

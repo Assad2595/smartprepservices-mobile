@@ -15,7 +15,10 @@
     },
     "android": {
       "package": "com.smartprepservices.mobile",
-      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE"]
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE"
+      ]
     },
     "plugins": [
       [
@@ -25,9 +28,6 @@
           "cameraPermission": "Used to photograph received packages and damage for shipment records."
         }
       ]
-    ],
-    "extra": {
-      "apiUrl": "http://192.168.100.6:8000/api"
-    }
+    ]
   }
 }

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { api } from '../api/client';
+import { api, errorMessage } from '../api/client';
 import { colors } from '../config';
 import { FormField, PrimaryButton, Section } from '../shared/ui';
+import { showAlert } from '../shared/alert';
 
-export function CartonFormScreen() {
+export function BoxFormScreen() {
   const route = useRoute<any>();
   const nav = useNavigation<any>();
   const shipmentId = route.params?.shipmentId;
@@ -28,26 +29,26 @@ export function CartonFormScreen() {
 
   async function submit() {
     if (!length || !width || !height || !weight) {
-      Alert.alert('Missing dimensions', 'Enter length, width, height and weight.');
+      showAlert('Missing dimensions', 'Enter length, width, height and weight.');
       return;
     }
     setBusy(true);
     try {
-      const cartonItems = items
+      const boxItems = items
         .filter((it) => Number(qty[it.id] || 0) > 0)
         .map((it) => ({ shipment_item_id: it.id, product_id: it.product_id, quantity: Number(qty[it.id]) }));
 
-      await api.post(`/shipments/${shipmentId}/cartons`, {
+      await api.post(`/shipments/${shipmentId}/boxes`, {
         length_in: Number(length),
         width_in: Number(width),
         height_in: Number(height),
         weight_lb: Number(weight),
         notes: notes || undefined,
-        items: cartonItems.length ? cartonItems : undefined,
+        items: boxItems.length ? boxItems : undefined,
       });
       nav.goBack();
     } catch (e: any) {
-      Alert.alert('Failed', e?.response?.data?.message || e.message);
+      showAlert('Failed', errorMessage(e));
     } finally {
       setBusy(false);
     }
@@ -55,7 +56,7 @@ export function CartonFormScreen() {
 
   return (
     <ScrollView style={styles.wrap} contentContainerStyle={{ padding: 16 }}>
-      <Text style={styles.title}>Add carton</Text>
+      <Text style={styles.title}>Add box</Text>
 
       <View style={styles.dimsRow}>
         <FormField label="Length (in)" value={length} onChangeText={setLength} keyboardType="decimal-pad" wrapperStyle={styles.dimField} />
@@ -66,7 +67,7 @@ export function CartonFormScreen() {
       <FormField label="Notes (optional)" value={notes} onChangeText={setNotes} multiline numberOfLines={3} />
 
       {items.length > 0 && (
-        <Section title="Items in this carton (optional)">
+        <Section title="Items in this box (optional)">
           {items.map((item) => (
             <View key={item.id} style={styles.itemRow}>
               <View style={{ flex: 1 }}>
@@ -85,7 +86,7 @@ export function CartonFormScreen() {
         </Section>
       )}
 
-      <PrimaryButton title="Save carton" onPress={submit} busy={busy} />
+      <PrimaryButton title="Save box" onPress={submit} busy={busy} />
     </ScrollView>
   );
 }

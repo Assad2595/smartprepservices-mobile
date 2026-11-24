@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { uploadPhoto } from '../api/client';
+import { errorMessage, uploadPhoto } from '../api/client';
 import { colors, storageUrl } from '../config';
 import { pickPhoto } from './pickPhoto';
 import { PhotoGrid, PrimaryButton } from './ui';
+import { showAlert } from './alert';
 
 /** Shared screen body for "attach a photo to an existing record" flows (receiving / damage). */
 export function PhotoUploadScreen({ title, uploadUrl }: { title: string; uploadUrl: string }) {
@@ -20,7 +21,7 @@ export function PhotoUploadScreen({ title, uploadUrl }: { title: string; uploadU
       const res = await uploadPhoto(uploadUrl, photo);
       setPhotos((prev) => [...prev, res.data.data]);
     } catch (e: any) {
-      Alert.alert('Upload failed', e?.response?.data?.message || e.message);
+      showAlert('Upload failed', errorMessage(e));
     } finally {
       setBusy(false);
     }
@@ -29,7 +30,7 @@ export function PhotoUploadScreen({ title, uploadUrl }: { title: string; uploadU
   return (
     <View style={styles.wrap}>
       <Text style={styles.title}>{title}</Text>
-      <PhotoGrid photos={photos.map((p) => ({ id: p.id, url: storageUrl(p.fileAsset?.path) }))} />
+      <PhotoGrid photos={photos.map((p) => ({ id: p.id, url: storageUrl(p.file_asset?.path) }))} />
       <PrimaryButton title="Take photo" onPress={() => add('camera')} busy={busy} variant="outline" />
       <PrimaryButton title="Choose from library" onPress={() => add('library')} busy={busy} variant="outline" />
       <PrimaryButton title="Done" onPress={() => nav.goBack()} />

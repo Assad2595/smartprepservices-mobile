@@ -1,5 +1,6 @@
 import * as ImagePicker from 'expo-image-picker';
-import { Alert } from 'react-native';
+import { Platform } from 'react-native';
+import { showAlert } from './alert';
 
 export type PickedPhoto = { uri: string; fileName?: string | null; mimeType?: string | null };
 
@@ -11,7 +12,7 @@ export async function pickPhoto(source: 'camera' | 'library'): Promise<PickedPho
       : await ImagePicker.requestMediaLibraryPermissionsAsync();
 
   if (!permission.granted) {
-    Alert.alert('Permission needed', `Allow ${source === 'camera' ? 'camera' : 'photo library'} access to attach photos.`);
+    showAlert('Permission needed', `Allow ${source === 'camera' ? 'camera' : 'photo library'} access to attach photos.`);
     return null;
   }
 
@@ -26,7 +27,13 @@ export async function pickPhoto(source: 'camera' | 'library'): Promise<PickedPho
 }
 
 export function promptPhotoSource(onPick: (photo: PickedPhoto) => void) {
-  Alert.alert('Add photo', undefined, [
+  // A browser has no camera-vs-library choice worth asking about: the file
+  // dialog covers both, so go straight to it.
+  if (Platform.OS === 'web') {
+    pickPhoto('library').then((p) => p && onPick(p));
+    return;
+  }
+  showAlert('Add photo', undefined, [
     { text: 'Take photo', onPress: async () => { const p = await pickPhoto('camera'); if (p) onPick(p); } },
     { text: 'Choose from library', onPress: async () => { const p = await pickPhoto('library'); if (p) onPick(p); } },
     { text: 'Cancel', style: 'cancel' },

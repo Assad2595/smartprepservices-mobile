@@ -1,12 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { api, clearToken, getToken, setToken } from '../api/client';
-import {
-  AuthCompany,
-  AuthSession,
-  AuthUser,
-  isMobileStaff,
-  mapAuthSession,
-} from './permissions';
+import { AuthCompany, AuthSession, AuthUser, mapAuthSession } from './permissions';
 
 type AuthState = {
   user: AuthUser | null;
@@ -23,9 +17,6 @@ type AuthState = {
 const AuthContext = createContext<AuthState | null>(null);
 
 function applySession(session: AuthSession, setUser: (u: AuthUser) => void, setCompany: (c: AuthCompany) => void) {
-  if (!isMobileStaff(session.user)) {
-    throw new Error('Mobile app access is limited to internal warehouse staff.');
-  }
   setUser(session.user);
   setCompany(session.company);
 }
@@ -67,9 +58,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const session = mapAuthSession(res.data.data);
         if (!session.token) {
           throw new Error('Login response missing token');
-        }
-        if (!isMobileStaff(session.user)) {
-          throw new Error('Mobile app access is limited to internal warehouse staff.');
         }
         await setToken(session.token);
         setUser(session.user);

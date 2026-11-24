@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { api, uploadPhoto } from '../api/client';
+import { api, errorMessage, uploadPhoto } from '../api/client';
 import { colors, storageUrl } from '../config';
 import { promptPhotoSource } from '../shared/pickPhoto';
 import { FormField, PhotoGrid, PrimaryButton, Section } from '../shared/ui';
+import { showAlert } from '../shared/alert';
 
 const SEVERITIES = ['minor', 'major', 'critical'];
 
@@ -32,7 +33,7 @@ export function DamageReportScreen() {
 
   async function submit() {
     if (!description.trim()) {
-      Alert.alert('Description required', 'Describe the damage before saving.');
+      showAlert('Description required', 'Describe the damage before saving.');
       return;
     }
     setBusy(true);
@@ -45,7 +46,7 @@ export function DamageReportScreen() {
       });
       setReport(res.data.data);
     } catch (e: any) {
-      Alert.alert('Failed', e?.response?.data?.message || e.message);
+      showAlert('Failed', errorMessage(e));
     } finally {
       setBusy(false);
     }
@@ -57,7 +58,7 @@ export function DamageReportScreen() {
         const res = await uploadPhoto(`/shipments/${shipmentId}/damage-reports/${report.id}/photos`, photo);
         setPhotos((prev) => [...prev, res.data.data]);
       } catch (e: any) {
-        Alert.alert('Upload failed', e?.response?.data?.message || e.message);
+        showAlert('Upload failed', errorMessage(e));
       }
     });
   }
@@ -68,7 +69,7 @@ export function DamageReportScreen() {
         <Text style={styles.title}>Damage report saved</Text>
         <Text style={styles.meta}>Attach photos of the damage, then finish.</Text>
         <Section title="Photos">
-          <PhotoGrid photos={photos.map((p) => ({ id: p.id, url: storageUrl(p.fileAsset?.path) }))} />
+          <PhotoGrid photos={photos.map((p) => ({ id: p.id, url: storageUrl(p.file_asset?.path) }))} />
         </Section>
         <PrimaryButton title="+ Add photo" onPress={addPhoto} variant="outline" />
         <PrimaryButton title="Done" onPress={() => nav.goBack()} />

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
+import { errorMessage } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { colors } from '../config';
+import { showAlert } from '../shared/alert';
 
 export function LoginScreen() {
   const { login } = useAuth();
@@ -12,7 +14,7 @@ export function LoginScreen() {
   return (
     <View style={styles.wrap}>
       <Text style={styles.brand}>Smart Prep Services</Text>
-      <Text style={styles.sub}>Internal warehouse staff access</Text>
+      <Text style={styles.sub}>Warehouse management</Text>
       <View style={styles.card}>
         <Text style={styles.label}>Email</Text>
         <TextInput style={styles.input} autoCapitalize="none" value={email} onChangeText={setEmail} />
@@ -26,7 +28,7 @@ export function LoginScreen() {
               setBusy(true);
               await login(email.trim(), password);
             } catch (e: any) {
-              Alert.alert('Login failed', e?.response?.data?.message || e.message || 'Error');
+              showAlert('Login failed', errorMessage(e));
             } finally {
               setBusy(false);
             }

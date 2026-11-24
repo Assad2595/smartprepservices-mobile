@@ -24,9 +24,10 @@ export type AuthSession = {
   token?: string;
 };
 
-// Mobile app is operator-floor scoped: only Operator + Super Admin log in here.
-// Admin flows may be added back later (see backend Authz::MOBILE_STAFF_ROLES).
-const STAFF_ROLES = ['Super Admin', 'Operator'];
+// Access is permission-based: a role is only a bundle of permissions, so
+// nothing here checks role names. The backend gates every endpoint with its
+// own permission and scopes company users to their company; the app simply
+// shows whichever features the session's permissions allow.
 
 export function can(permissions: string[] | undefined, permission: string): boolean {
   return Boolean(permissions?.includes(permission));
@@ -38,12 +39,6 @@ export function hasRole(roles: string[] | undefined, role: string): boolean {
 
 export function hasAnyRole(roles: string[] | undefined, allowed: string[]): boolean {
   return Boolean(roles?.some((r) => allowed.includes(r)));
-}
-
-export function isMobileStaff(session: Pick<AuthUser, 'roles' | 'isInternal'> | null | undefined): boolean {
-  if (!session) return false;
-  if (session.isInternal === false) return false;
-  return hasAnyRole(session.roles, STAFF_ROLES);
 }
 
 export function mapAuthSession(payload: any): AuthSession {

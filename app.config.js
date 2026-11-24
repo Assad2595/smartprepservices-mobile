@@ -1,12 +1,17 @@
 const path = require('path');
 
 /**
- * Environment selection for the Expo config. `APP_ENV` picks the file under
- * `env/`; see env/example.env for every supported setting.
+ * Environment selection. `APP_ENV` picks one file under `env/`:
  *
- *   npm run start:local  -> env/local.env        (phone on the same WiFi as Laravel)
- *   npm run start:dev    -> env/development.env  (shared dev/staging server)
- *   npm run start:prod   -> env/production.env   (live server)
+ *   local -> env/local.env   (Laravel on this machine)
+ *   dev   -> env/dev.env     (shared dev/staging server)
+ *   prod  -> env/prod.env    (live server)
+ *
+ *   npm run start:<env>   dev server        npm run apk:<env>   build an APK on this machine
+ *   npm run build:<env>   build on EAS      (see eas.json profiles: local / dev / prod)
+ *
+ * To point a build somewhere else, edit API_URL in the matching env file —
+ * nothing in the code needs to change.
  *
  * These deliberately do NOT live in root-level `.env.*` files: Expo CLI
  * auto-loads `.env.local` for every command regardless of APP_ENV, which would
@@ -23,7 +28,7 @@ const result = require('dotenv').config({
 
 if (result.error) {
   throw new Error(
-    `Missing env file: env/${APP_ENV}.env — copy env/example.env to create it. (APP_ENV=${APP_ENV})`,
+    `Missing env file: env/${APP_ENV}.env — expected one of local, dev, prod. (APP_ENV=${APP_ENV})`,
   );
 }
 
@@ -46,7 +51,7 @@ module.exports = ({ config }) => ({
     envLabel: process.env.ENV_LABEL || APP_ENV.toUpperCase(),
     apiUrl: API_URL,
     requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS || 20000),
-    showEnvBadge: bool(process.env.SHOW_ENV_BADGE, APP_ENV !== 'production'),
+    showEnvBadge: bool(process.env.SHOW_ENV_BADGE, APP_ENV !== 'prod'),
     eas: config.extra?.eas,
   },
   android: {

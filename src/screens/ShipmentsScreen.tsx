@@ -1,73 +1,102 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { FlatList, Pressable, RefreshControl, ScrollView, Text, View, StyleSheet } from 'react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { FlatList, RefreshControl, Text, View, StyleSheet } from 'react-native';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { api } from '../api/client';
+import { useAuth } from '../auth/AuthContext';
 import { colors } from '../config';
-import { StatusBadge } from '../shared/ui';
+import { dateLabel, serviceTypeLabel } from '../shared/format';
+import { Card, Chip, FilterChips, HeaderAction, SearchInput, StatusBadge } from '../shared/ui';
 
-const FILTERS = [
-  { key: 'ALL', label: 'All' },
+const TYPE_FILTERS = [
+  { key: '', label: 'All types' },
+  { key: 'amazon_prep', label: 'Amazon Prep' },
+  { key: 'receiving_forwarding', label: 'Forwarding' },
+];
+
+const STATUS_FILTERS = [
   { key: 'OPEN', label: 'Open' },
+  { key: '', label: 'All' },
   { key: 'EXPECTED', label: 'Expected' },
   { key: 'RECEIVED', label: 'Received' },
   { key: 'INSPECTION', label: 'Inspection' },
+  { key: 'WAITING_FOR_FNSKU', label: 'Awaiting FNSKU' },
   { key: 'PACKING', label: 'Packing' },
+  { key: 'WAITING_FOR_BOX_LABELS', label: 'Awaiting box labels' },
   { key: 'WAITING_FOR_PAYMENT', label: 'Awaiting payment' },
   { key: 'READY_TO_SHIP', label: 'Ready to ship' },
+  { key: 'PENDING_CONSOLIDATION', label: 'Pending consolidation' },
+  { key: 'CONSOLIDATED', label: 'Consolidated' },
+  { key: 'DISPATCHED', label: 'Dispatched' },
   { key: 'COMPLETED', label: 'Completed' },
+  { key: 'DELIVERED', label: 'Delivered' },
+  { key: 'CANCELLED', label: 'Cancelled' },
 ];
 
 export function ShipmentsScreen() {
   const nav = useNavigation<any>();
+  const route = useRoute<any>();
+  const { can } = useAuth();
   const [items, setItems] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState('ALL');
+  const [type, setType] = useState('');
+  const [status, setStatus] = useState<string>(route.params?.status ?? 'OPEN');
+  const [search, setSearch] = useState('');
+
+  // A dashboard tile can open this tab pre-filtered.
+  useEffect(() => {
+    if (route.params?.status !== undefined) setStatus(route.params.status);
+  }, [route.params?.status]);
+
+  useLayoutEffect(() => {
+    nav.setOptions({
+      headerRight: () =>
+        can('shipments.create') || can('packages.create') ? (
+          <HeaderAction title="+ New" onPress={() => nav.navigate('ShipmentCreate')} />
+        ) : null,
+    });
+  }, [nav, can]);
 
   const load = useCallback(async () => {
     setRefreshing(true);
     try {
-      const res = await api.get('/shipments');
+      const res = await api.get('/shipments', { params: { service_type: type || undefined, status: status || undefined, search: search || undefined } });
       setItems(res.data.data?.data || res.data.data || []);
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [type, status, search]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  const filtered = useMemo(() => {
-    if (filter === 'ALL') return items;
-    if (filter === 'OPEN') return items.filter((i) => !['COMPLETED', 'CANCELLED'].includes(i.status));
-    return items.filter((i) => i.status === filter);
-  }, [items, filter]);
-
   return (
     <View style={{ flex: 1, backgroundColor: colors.surface }}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
-        {FILTERS.map((f) => (
-          <Pressable
-            key={f.key}
-            style={[styles.filterChip, filter === f.key && styles.filterChipActive]}
-            onPress={() => setFilter(f.key)}
-          >
-            <Text style={[styles.filterText, filter === f.key && styles.filterTextActive]}>{f.label}</Text>
-          </Pressable>
-        ))}
-      </ScrollView>
+      <SearchInput value={search} onChangeText={setSearch} onSubmit={load} placeholder="Reference, tracking, company or product…" />
+      <FilterChips options={TYPE_FILTERS} value={type} onChange={setType} />
+      <FilterChips options={STATUS_FILTERS} value={status} onChange={setStatus} />
       <FlatList
-        contentContainerStyle={{ padding: 16, paddingTop: 8, gap: 10 }}
-        data={filtered}
+        contentContainerStyle={{ padding: 16, paddingTop: 4 }}
+        data={items}
         keyExtractor={(item) => String(item.id)}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}
-        ListEmptyComponent={<Text style={{ textAlign: 'center', color: '#64748b', marginTop: 40 }}>No shipments</Text>}
+        ListEmptyComponent={<Text style={styles.empty}>No shipments</Text>}
         renderItem={({ item }) => (
-          <Pressable style={styles.card} onPress={() => nav.navigate('ShipmentDetail', { id: item.id })}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.ref}>{item.reference_code}</Text>
-              <Text style={styles.meta}>{item.company?.name || '—'}</Text>
+          <Card onPress={() => nav.navigate('ShipmentDetail', { id: item.id })}>
+            <View style={styles.rowTop}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.ref}>{item.reference_code}</Text>
+                <Text style={styles.meta}>{item.company?.name || '—'}</Text>
+              </View>
+              <StatusBadge status={item.status} />
             </View>
-            <StatusBadge status={item.status} />
-          </Pressable>
+            <View style={styles.rowBottom}>
+              <Chip label={serviceTypeLabel(item.service_type)} tone="muted" />
+              <Text style={styles.metaSmall}>
+                {item.items_count ?? 0} product{item.items_count === 1 ? '' : 's'}
+                {item.tracking_number ? ` · ${item.tracking_number}` : ''}
+                {item.expected_arrival ? ` · due ${dateLabel(item.expected_arrival)}` : ''}
+              </Text>
+            </View>
+          </Card>
         )}
       />
     </View>
@@ -75,15 +104,10 @@ export function ShipmentsScreen() {
 }
 
 const styles = StyleSheet.create({
-  filters: { paddingHorizontal: 16, paddingTop: 12, gap: 8 },
-  filterChip: { borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 12, backgroundColor: '#fff' },
-  filterChipActive: { backgroundColor: colors.navy, borderColor: colors.navy },
-  filterText: { color: colors.navy, fontWeight: '600', fontSize: 12 },
-  filterTextActive: { color: '#fff' },
-  card: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: '#fff', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: colors.border,
-  },
+  rowTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  rowBottom: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' },
   ref: { fontWeight: '700', color: colors.navy },
   meta: { color: '#64748b', marginTop: 4 },
+  metaSmall: { color: colors.muted, fontSize: 12, flexShrink: 1 },
+  empty: { textAlign: 'center', color: '#64748b', marginTop: 40 },
 });

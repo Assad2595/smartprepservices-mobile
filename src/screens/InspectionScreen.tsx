@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { api } from '../api/client';
+import { api, errorMessage } from '../api/client';
 import { colors } from '../config';
 import { FormField, PrimaryButton } from '../shared/ui';
+import { showAlert } from '../shared/alert';
 
 export function InspectionScreen() {
   const route = useRoute<any>();
@@ -16,7 +17,7 @@ export function InspectionScreen() {
 
   async function submit() {
     if (passed === null) {
-      Alert.alert('Choose a result', 'Mark this inspection as passed or failed.');
+      showAlert('Choose a result', 'Mark this inspection as passed or failed.');
       return;
     }
     setBusy(true);
@@ -24,7 +25,7 @@ export function InspectionScreen() {
       await api.post(`/shipments/${shipmentId}/inspection`, { passed, summary: summary || undefined });
       nav.goBack();
     } catch (e: any) {
-      Alert.alert('Failed', e?.response?.data?.message || e.message);
+      showAlert('Failed', errorMessage(e));
     } finally {
       setBusy(false);
     }
