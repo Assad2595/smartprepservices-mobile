@@ -65,7 +65,7 @@ export function DamageReportScreen() {
 
   if (report) {
     return (
-      <ScrollView style={styles.wrap} contentContainerStyle={{ padding: 16 }}>
+      <ScrollView style={styles.wrap} contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>Damage report saved</Text>
         <Text style={styles.meta}>Attach photos of the damage, then finish.</Text>
         <Section title="Photos">
@@ -78,7 +78,7 @@ export function DamageReportScreen() {
   }
 
   return (
-    <ScrollView style={styles.wrap} contentContainerStyle={{ padding: 16 }}>
+    <ScrollView style={styles.wrap} contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>Report damage</Text>
 
       {skus.length > 0 && (
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: '700', color: colors.navy, marginBottom: 12 },
   meta: { color: colors.muted, fontSize: 12, marginBottom: 8 },
   fieldWrap: { marginBottom: 14 },
-  label: { marginBottom: 6, color: '#334155', fontWeight: '600', fontSize: 13 },
+  label: { marginBottom: 6, color: '#4A4A40', fontWeight: '600', fontSize: 13 },
   chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 12, backgroundColor: '#fff' },
   chipActive: { backgroundColor: colors.navy, borderColor: colors.navy },

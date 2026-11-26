@@ -116,7 +116,7 @@ export function TaskFormScreen() {
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surface }} contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled">
+    <ScrollView style={{ flex: 1, backgroundColor: colors.surface }} contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
       <Section title="Task">
         <FormField label="Task" value={title} onChangeText={setTitle} placeholder="e.g. Label the boxes on SP1004" autoFocus={!editing} />
         <FormField
@@ -145,6 +145,7 @@ export function TaskFormScreen() {
           value={shipmentId}
           options={[{ value: '', label: 'Not about a shipment' }, ...shipments.map((s) => ({ value: s.id, label: s.label }))]}
           onChange={(v) => setShipmentId(v === '' || v === null ? null : Number(v))}
+          scannable
         />
         <PickerField
           label="Priority"

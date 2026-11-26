@@ -1,8 +1,10 @@
+import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
 type Extra = {
   apiUrl?: string;
   appEnv?: string;
+  build?: number;
   envLabel?: string;
   requestTimeoutMs?: number;
   showEnvBadge?: boolean;
@@ -13,6 +15,10 @@ const extra = (Constants.expoConfig?.extra ?? {}) as Extra;
 
 /** Which env file this build was configured from: local | dev | prod. */
 export const APP_ENV = extra.appEnv ?? 'local';
+/** This build's number (v1, v2…), compared with the newest on the portal to offer an update. */
+export const APP_BUILD = Number(extra.build) || 0;
+/** What staff quote when asked which app they have, e.g. "Version 1.0 · v2". */
+export const VERSION_LABEL = `Version ${Constants.expoConfig?.version ?? '1.0'}${extra.build ? ` · v${extra.build}` : ''}`;
 /** Short label for the in-app environment badge, e.g. "LOCAL". */
 export const ENV_LABEL = extra.envLabel ?? APP_ENV.toUpperCase();
 export const SHOW_ENV_BADGE = extra.showEnvBadge ?? APP_ENV !== 'prod';
@@ -32,55 +38,65 @@ export function storageUrl(path?: string | null): string | undefined {
   return `${APP_URL}/storage/${path.replace(/^\/+/, '')}`;
 }
 
+/**
+ * The "Warehouse Ops" palette (design canvas): warm off-white canvas, ink
+ * navy, one orange accent, and muted green / amber / red for status. The old
+ * key names stay (navy = ink, amber = accent, surface = canvas) so every
+ * screen takes the new look without being edited one by one.
+ */
 export const colors = {
-  navy: '#0B1F3A',
-  amber: '#D97706',
-  surface: '#F1F5F9',
-  border: '#CBD5E1',
-  danger: '#B91C1C',
-  success: '#15803D',
-  muted: '#64748B',
+  navy: '#1B2430',
+  amber: '#D9762E',
+  surface: '#F5F3EE',
+  border: '#E4DFD3',
+  danger: '#B4472F',
+  success: '#3F7D58',
+  muted: '#7C7768',
+  muted2: '#9B9686',
+  warn: '#B8862E',
+  panel: '#FFFFFF',
+  inkSoft: '#28323F',
+  dangerBg: '#F5E2DC',
+  successBg: '#E7F0E9',
+  warnBg: '#F5EAD3',
+  accentBg: 'rgba(217,118,46,0.14)',
+  neutralBg: '#EFECE3',
 };
 
-export const statusColors: Record<string, string> = {
-  EXPECTED: '#64748B',
-  RECEIVED: '#2563EB',
-  INSPECTION: '#7C3AED',
-  WAITING_FOR_FNSKU: '#D97706',
-  FNSKU_APPLIED: '#0EA5E9',
-  PACKING: '#0891B2',
-  WAITING_FOR_BOX_LABELS: '#D97706',
-  BOX_LABELS_APPLIED: '#0EA5E9',
-  WAITING_FOR_PAYMENT: '#D97706',
-  PAYMENT_VERIFIED: '#15803D',
+/** IDs, tracking numbers and quantities, as the design sets them. */
+export const monoFont = Platform.select({ ios: 'Menlo', default: 'monospace' });
+
+export type Tone = 'good' | 'warn' | 'active' | 'bad' | 'neutral';
+
+export const tones: Record<Tone, { fg: string; bg: string }> = {
+  good: { fg: colors.success, bg: colors.successBg },
+  warn: { fg: colors.warn, bg: colors.warnBg },
+  active: { fg: colors.amber, bg: colors.accentBg },
+  bad: { fg: colors.danger, bg: colors.dangerBg },
+  neutral: { fg: colors.muted, bg: colors.neutralBg },
+};
+
+/** Which colour family a status belongs to: done, waiting on someone, being worked on, stopped, or not started. */
+const STATUS_TONE: Record<string, Tone> = {
+  // Shipments
+  RECEIVED: 'active', INSPECTION: 'active', FNSKU_APPLIED: 'active', BOX_LABELS_APPLIED: 'active', PACKING: 'active',
+  PROCESSING: 'active', CONSOLIDATED: 'active', SHIPPED: 'active', DISPATCHED: 'active',
+  WAITING_FOR_FNSKU: 'warn', WAITING_FOR_BOX_LABELS: 'warn', WAITING_FOR_PAYMENT: 'warn', WAITING_FOR_CUSTOMER: 'warn',
+  PENDING_CONSOLIDATION: 'warn',
+  PAYMENT_VERIFIED: 'good', READY_TO_SHIP: 'good', READY_FOR_SHIPMENT: 'good', COMPLETED: 'good', DELIVERED: 'good',
+  CANCELLED: 'bad',
   // Tasks
-  PENDING: '#64748B',
-  IN_PROGRESS: '#D97706',
-  DONE: '#15803D',
-  READY_TO_SHIP: '#15803D',
-  SHIPPED: '#0B1F3A',
-  COMPLETED: '#15803D',
-  CANCELLED: '#B91C1C',
-  // Receiving & Forwarding
-  PROCESSING: '#7C3AED',
-  WAITING_FOR_CUSTOMER: '#D97706',
-  PENDING_CONSOLIDATION: '#0891B2',
-  CONSOLIDATED: '#0EA5E9',
-  READY_FOR_SHIPMENT: '#15803D',
-  DISPATCHED: '#0B1F3A',
-  DELIVERED: '#15803D',
+  IN_PROGRESS: 'active', DONE: 'good',
   // Invoices / payments
-  DRAFT: '#64748B',
-  ISSUED: '#D97706',
-  PARTIALLY_PAID: '#0891B2',
-  PAID: '#15803D',
-  VOID: '#B91C1C',
-  SUBMITTED: '#D97706',
-  VERIFIED: '#15803D',
-  REJECTED: '#B91C1C',
-  REFUNDED: '#7C3AED',
+  ISSUED: 'warn', PARTIALLY_PAID: 'warn', SUBMITTED: 'warn', OVERDUE: 'bad',
+  PAID: 'good', VERIFIED: 'good', VOID: 'bad', REJECTED: 'bad',
 };
 
+export function statusTone(status?: string | null): { fg: string; bg: string } {
+  return tones[(status && STATUS_TONE[status]) || 'neutral'];
+}
+
+/** The status's colour (badge text, timeline dot, card edge). */
 export function statusColor(status?: string | null): string {
-  return (status && statusColors[status]) || colors.muted;
+  return statusTone(status).fg;
 }

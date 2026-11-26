@@ -21,7 +21,7 @@ const FILTERS: { key: Filter; label: string }[] = [
 const PRIORITY_COLOR: Record<string, string> = {
   HIGH: colors.danger,
   NORMAL: colors.muted,
-  LOW: '#94A3B8',
+  LOW: '#9B9686',
 };
 
 /**
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   rowBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, gap: 8 },
   title: { fontWeight: '700', color: colors.navy },
   titleDone: { textDecorationLine: 'line-through', color: colors.muted },
-  meta: { color: '#64748b', marginTop: 4, fontSize: 13 },
+  meta: { color: '#7C7768', marginTop: 4, fontSize: 13 },
   description: { color: '#475569', marginTop: 6, fontSize: 13 },
   metaSmall: { fontSize: 12, fontWeight: '600', flex: 1 },
   actions: { flexDirection: 'row', gap: 6 },
@@ -171,5 +171,5 @@ const styles = StyleSheet.create({
   btnDoneText: { color: '#15803D', fontWeight: '700', fontSize: 12 },
   btnReopen: { borderColor: colors.border, backgroundColor: '#fff' },
   btnReopenText: { color: colors.muted, fontWeight: '700', fontSize: 12 },
-  empty: { textAlign: 'center', color: '#64748b', marginTop: 40 },
+  empty: { textAlign: 'center', color: '#7C7768', marginTop: 40 },
 });

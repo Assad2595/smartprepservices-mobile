@@ -139,5 +139,5 @@ export function PaymentFormScreen() {
 const styles = StyleSheet.create({
   wrap: { flex: 1, backgroundColor: colors.surface },
   hint: { color: colors.muted, fontSize: 12, marginBottom: 12 },
-  thumb: { width: 56, height: 56, borderRadius: 8, backgroundColor: '#E2E8F0' },
+  thumb: { width: 56, height: 56, borderRadius: 8, backgroundColor: '#EFECE3' },
 });

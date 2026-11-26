@@ -3,6 +3,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { ActivityIndicator, View } from 'react-native';
+// This path, not '@expo/vector-icons': the package root bundles every icon font.
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { UpdatePrompt } from '../shared/UpdatePrompt';
 import { useAuth } from '../auth/AuthContext';
 import { LoginScreen } from '../screens/LoginScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
@@ -34,9 +38,12 @@ import { UserDetailScreen } from '../screens/UserDetailScreen';
 import { MoreScreen } from '../screens/MoreScreen';
 import { colors } from '../config';
 
+// Ink header with heavy titles and no shadow line (design canvas).
 const headerOptions = {
   headerStyle: { backgroundColor: colors.navy },
-  headerTintColor: '#fff',
+  headerTintColor: '#F5F3EE',
+  headerTitleStyle: { fontWeight: '800' as const },
+  headerShadowVisible: false,
 };
 
 const modalScreenOptions = {
@@ -52,26 +59,48 @@ const Tabs = createBottomTabNavigator();
  * so nothing here checks role names. The backend gates every endpoint the
  * same way; this only avoids showing a tab that would come back 403.
  */
+const TAB_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
+  Home: 'grid-outline',
+  Products: 'cube-outline',
+  Inbound: 'arrow-down-circle-outline',
+  Outbound: 'arrow-up-circle-outline',
+  More: 'ellipsis-horizontal',
+};
+
 function MainTabs() {
   const { can } = useAuth();
+  const insets = useSafeAreaInsets();
 
   return (
+    <>
+    {/* Offers a newer build uploaded on the portal (Android only). */}
+    <UpdatePrompt />
     <Tabs.Navigator
-      screenOptions={{
+      screenOptions={({ route }) => ({
         ...headerOptions,
         tabBarActiveTintColor: colors.amber,
-      }}
+        tabBarInactiveTintColor: colors.muted2,
+        tabBarIcon: ({ color }) => <Ionicons name={TAB_ICONS[route.name] ?? 'ellipse-outline'} size={22} color={color} />,
+        tabBarLabelStyle: { fontSize: 10, lineHeight: 15, fontWeight: '600' },
+        // Room for icon and label, above the phone's own navigation bar.
+        tabBarStyle: { height: 56 + insets.bottom, backgroundColor: colors.panel, borderTopColor: colors.border },
+        tabBarItemStyle: { paddingHorizontal: 0 },
+        tabBarAllowFontScaling: false,
+      })}
     >
       <Tabs.Screen name="Home" component={DashboardScreen} />
       {can('products.view') && <Tabs.Screen name="Products" component={ProductsScreen} options={{ title: 'Inventory' }} />}
+      {/* Shipments in two lists, as on the portal: goods coming in, and goods going out. */}
       {(can('shipments.view') || can('packages.view') || can('master_shipments.view')) && (
-        <Tabs.Screen name="Shipments" component={ShipmentsScreen} />
+        <Tabs.Screen name="Inbound" component={ShipmentsScreen} initialParams={{ direction: 'inbound' }} options={{ title: 'Inbound' }} />
       )}
-      {can('invoices.view') && <Tabs.Screen name="Invoices" component={InvoicesScreen} />}
-      {can('payments.view') && <Tabs.Screen name="Payments" component={PaymentsScreen} />}
-      {/* Companies, Users and Tasks live behind More, so the bar stays at six tabs. */}
+      {(can('shipments.view') || can('packages.view') || can('master_shipments.view')) && (
+        <Tabs.Screen name="Outbound" component={ShipmentsScreen} initialParams={{ direction: 'outbound' }} options={{ title: 'Outbound' }} />
+      )}
+      {/* Invoices, Payments, Companies, Users and Tasks live behind More, so the bar stays at five tabs. */}
       <Tabs.Screen name="More" component={MoreScreen} />
     </Tabs.Navigator>
+    </>
   );
 }
 
@@ -109,6 +138,10 @@ export function RootNavigator() {
             {/* Products */}
             <Stack.Screen name="ProductDetail" component={ProductDetailScreen} options={{ title: 'Product', ...headerOptions }} />
             <Stack.Screen name="ProductForm" component={ProductFormScreen} options={{ title: 'Product', ...modalScreenOptions }} />
+
+            {/* Invoices and payments lists (opened from More) */}
+            <Stack.Screen name="Invoices" component={InvoicesScreen} options={{ title: 'Invoices', ...headerOptions }} />
+            <Stack.Screen name="Payments" component={PaymentsScreen} options={{ title: 'Payments', ...headerOptions }} />
 
             {/* Invoices */}
             <Stack.Screen name="InvoiceDetail" component={InvoiceDetailScreen} options={{ title: 'Invoice', ...headerOptions }} />

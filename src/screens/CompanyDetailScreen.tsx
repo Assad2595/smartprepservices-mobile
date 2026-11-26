@@ -35,21 +35,24 @@ export function CompanyDetailScreen() {
 
   if (!company) {
     return (
-      <View style={styles.wrap}>
+      <View style={[styles.wrap, styles.content]}>
         <Text style={{ color: colors.muted }}>Loading…</Text>
       </View>
     );
   }
 
-  // Opens one of the main tabs narrowed to this company (status cleared, so nothing is hidden).
-  const openTab = (screen: string) =>
-    nav.navigate('Main', { screen, params: { companyId: company.id, companyName: company.name, status: '' } });
+  // Opens a list narrowed to this company (status cleared, so nothing is hidden).
+  // Inventory and the shipment lists are tabs; Invoices opens from More.
+  const openTab = (screen: string) => {
+    const params = { companyId: company.id, companyName: company.name, status: '' };
+    return screen === 'Invoices' ? nav.navigate(screen, params) : nav.navigate('Main', { screen, params });
+  };
 
   const balance = Number(company.balance) || 0;
   const address = [company.address_line_1, company.address_line_2, company.city, company.state, company.zip, company.country].filter(Boolean).join(', ');
 
   return (
-    <ScrollView style={styles.wrap} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}>
+    <ScrollView style={styles.wrap} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}>
       <Text style={styles.title}>{company.name}</Text>
       <View style={styles.chips}>
         <Chip label={company.is_active ? 'ACTIVE' : 'INACTIVE'} tone={company.is_active ? 'success' : 'muted'} />
@@ -68,8 +71,8 @@ export function CompanyDetailScreen() {
       <View style={styles.counts}>
         {[['shipments_count', 'Shipments'], ['products_count', 'Products'], ['users_count', 'Users']].map(([k, label]) => (
           <View key={k} style={styles.count}>
-            <Text style={styles.countValue}>{company[k] ?? 0}</Text>
-            <Text style={styles.countLabel}>{label}</Text>
+            <Text style={styles.countValue} numberOfLines={1} adjustsFontSizeToFit>{company[k] ?? 0}</Text>
+            <Text style={styles.countLabel} numberOfLines={1} adjustsFontSizeToFit>{label}</Text>
           </View>
         ))}
       </View>
@@ -136,8 +139,13 @@ export function CompanyDetailScreen() {
         <Section title="Open for this company">
           <View style={styles.links}>
             {can('shipments.view') && (
-              <Pressable style={styles.linkBtn} onPress={() => openTab('Shipments')}>
-                <Text style={styles.linkBtnText}>Shipments</Text>
+              <Pressable style={styles.linkBtn} onPress={() => openTab('Inbound')}>
+                <Text style={styles.linkBtnText}>Inbound</Text>
+              </Pressable>
+            )}
+            {can('shipments.view') && (
+              <Pressable style={styles.linkBtn} onPress={() => openTab('Outbound')}>
+                <Text style={styles.linkBtnText}>Outbound</Text>
               </Pressable>
             )}
             {can('products.view') && (
@@ -159,7 +167,8 @@ export function CompanyDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: colors.surface, padding: 16 },
+  wrap: { flex: 1, backgroundColor: colors.surface },
+  content: { padding: 16, paddingBottom: 32 },
   title: { fontSize: 20, fontWeight: '700', color: colors.navy },
   chips: { flexDirection: 'row', gap: 8, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' },
   balanceCard: { marginTop: 16, backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: colors.border, padding: 16 },
@@ -173,7 +182,7 @@ const styles = StyleSheet.create({
   countLabel: { color: colors.muted, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.4, marginTop: 2 },
   link: { color: colors.navy, fontWeight: '700', paddingVertical: 6 },
   ledger: { flexDirection: 'row', gap: 10, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-  ledgerType: { fontWeight: '700', color: '#0F172A' },
+  ledgerType: { fontWeight: '700', color: '#1B2430' },
   ledgerMeta: { color: colors.muted, fontSize: 12, marginTop: 2 },
   ledgerAmount: { fontWeight: '800' },
   links: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },

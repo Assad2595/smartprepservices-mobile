@@ -41,7 +41,7 @@ export function ShipmentDetailScreen() {
 
   if (!shipment) {
     return (
-      <View style={styles.wrap}>
+      <View style={[styles.wrap, styles.content]}>
         <Text style={{ color: colors.muted }}>Loading…</Text>
       </View>
     );
@@ -101,7 +101,7 @@ export function ShipmentDetailScreen() {
   const boxLabelFor = (boxId: number) => boxLabels.find((l: any) => l.box_id === boxId);
 
   return (
-    <ScrollView style={styles.wrap} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}>
+    <ScrollView style={styles.wrap} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}>
       {/* Header */}
       <Text style={styles.ref}>{shipment.reference_code}</Text>
       <View style={styles.headerRow}>
@@ -282,7 +282,7 @@ export function ShipmentDetailScreen() {
         {damageReports.length === 0 && <EmptyRow text="No damage reported." />}
         {damageReports.map((dmg: any) => (
           <Card key={dmg.id}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8 }}>
               <Text style={styles.rowTitle}>Qty {dmg.quantity} damaged</Text>
               {!!dmg.severity && <Chip label={String(dmg.severity).toUpperCase()} tone="amber" />}
             </View>
@@ -382,17 +382,18 @@ export function ShipmentDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: colors.surface, padding: 16 },
+  wrap: { flex: 1, backgroundColor: colors.surface },
+  content: { padding: 16, paddingBottom: 32 },
   ref: { fontSize: 22, fontWeight: '700', color: colors.navy },
-  headerRow: { flexDirection: 'row', gap: 8, marginTop: 8, alignItems: 'center' },
+  headerRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8, alignItems: 'center' },
   meta: { color: colors.muted, marginTop: 8 },
   metaSmall: { color: colors.muted, fontSize: 12, marginTop: 2 },
   btn: { backgroundColor: colors.navy, borderRadius: 10, padding: 12, marginTop: 8 },
   btnDanger: { backgroundColor: colors.danger },
   btnText: { color: '#fff', fontWeight: '600', textAlign: 'center' },
-  actionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  actionsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 10 },
   actionCard: {
-    width: '47%', backgroundColor: '#fff', borderRadius: 12, padding: 14,
+    width: '48.5%', backgroundColor: '#fff', borderRadius: 12, padding: 14,
     borderWidth: 1, borderColor: colors.border, alignItems: 'center',
   },
   actionText: { color: colors.navy, fontWeight: '700', textAlign: 'center' },

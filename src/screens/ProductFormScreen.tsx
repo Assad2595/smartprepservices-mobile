@@ -154,12 +154,12 @@ export function ProductFormScreen() {
 const styles = StyleSheet.create({
   wrap: { flex: 1, backgroundColor: colors.surface },
   row2: { flexDirection: 'row', gap: 8 },
-  row3: { flexDirection: 'row', gap: 8 },
+  row3: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
   half: { flex: 1 },
   third: { flex: 1 },
-  label: { marginBottom: 4, color: '#334155', fontWeight: '600', fontSize: 13 },
+  label: { marginBottom: 4, color: '#4A4A40', fontWeight: '600', fontSize: 13 },
   hint: { color: colors.muted, fontSize: 12, marginBottom: 8 },
   thumbs: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
-  thumb: { width: 72, height: 72, borderRadius: 8, backgroundColor: '#E2E8F0' },
+  thumb: { width: 72, height: 72, borderRadius: 8, backgroundColor: '#EFECE3' },
   remove: { position: 'absolute', top: 2, right: 6, color: '#fff', fontWeight: '700', textShadowColor: '#000', textShadowRadius: 3 },
 });

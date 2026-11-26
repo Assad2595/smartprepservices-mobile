@@ -2,9 +2,10 @@
   "expo": {
     "name": "Smart Prep Services",
     "slug": "sps-mobile",
-    "version": "1.0.0",
+    "version": "1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.smartprepservices.mobile",
@@ -15,9 +16,15 @@
     },
     "android": {
       "package": "com.smartprepservices.mobile",
+      "versionCode": 7,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
       "permissions": [
         "CAMERA",
-        "READ_EXTERNAL_STORAGE"
+        "READ_EXTERNAL_STORAGE",
+        "REQUEST_INSTALL_PACKAGES"
       ]
     },
     "plugins": [

@@ -2,18 +2,23 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, RefreshControl, ScrollView, Pressable } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { api } from '../api/client';
+import { setAppConfig } from '../shared/appConfig';
 import { useAuth } from '../auth/AuthContext';
 import { API_URL, ENV_LABEL, SHOW_ENV_BADGE, colors } from '../config';
 
-/** Label and, where it makes sense, the list to open when the tile is tapped. */
-const KPIS: Record<string, { label: string; tab?: string; params?: Record<string, string> }> = {
-  openShipments: { label: 'Open shipments', tab: 'Shipments', params: { status: 'OPEN' } },
-  expected: { label: 'Expected', tab: 'Shipments', params: { status: 'EXPECTED' } },
-  awaitingFnsku: { label: 'Awaiting FNSKU', tab: 'Shipments', params: { status: 'WAITING_FOR_FNSKU' } },
-  awaitingPayment: { label: 'Awaiting payment', tab: 'Shipments', params: { status: 'WAITING_FOR_PAYMENT' } },
-  readyToShip: { label: 'Ready to ship', tab: 'Shipments', params: { status: 'READY_TO_SHIP' } },
-  unpaidInvoices: { label: 'Unpaid invoices', tab: 'Invoices', params: { status: 'ISSUED' } },
-  paymentsToVerify: { label: 'Payments to verify', tab: 'Payments', params: { status: 'SUBMITTED' } },
+/**
+ * Label, colour and the list a tile opens. Inbound and Outbound are tabs;
+ * Invoices and Payments open from More. Open shipments spans both lists, so
+ * it only counts.
+ */
+const KPIS: Record<string, { label: string; tab?: string; stack?: string; params?: Record<string, string>; tone?: string }> = {
+  openShipments: { label: 'Open shipments' },
+  expected: { label: 'Expected in', tab: 'Inbound', params: { status: 'EXPECTED' } },
+  awaitingFnsku: { label: 'Waiting for FNSKU', tab: 'Outbound', params: { status: 'WAITING_FOR_FNSKU' }, tone: colors.warn },
+  awaitingPayment: { label: 'Waiting for payment', tab: 'Outbound', params: { status: 'WAITING_FOR_PAYMENT' }, tone: colors.warn },
+  readyToShip: { label: 'Ready to ship', tab: 'Outbound', params: { status: 'READY_TO_SHIP' }, tone: colors.success },
+  unpaidInvoices: { label: 'Unpaid invoices', stack: 'Invoices', params: { status: 'ISSUED' }, tone: colors.danger },
+  paymentsToVerify: { label: 'Payments to verify', stack: 'Payments', params: { status: 'SUBMITTED' }, tone: colors.amber },
 };
 
 export function DashboardScreen() {
@@ -27,6 +32,8 @@ export function DashboardScreen() {
     try {
       const res = await api.get('/dashboard');
       setKpis(res.data.data || {});
+      // The portal's App settings travel with the Home data.
+      setAppConfig(res.data.appConfig);
     } finally {
       setRefreshing(false);
     }
@@ -38,14 +45,15 @@ export function DashboardScreen() {
     }, [load]),
   );
 
-  const tabVisible = (tab?: string) =>
-    tab === 'Shipments' ? can('shipments.view') || can('packages.view')
-      : tab === 'Invoices' ? can('invoices.view')
-        : tab === 'Payments' ? can('payments.view')
+  const openable = (m: { tab?: string; stack?: string }) =>
+    m.tab ? can('shipments.view') || can('packages.view')
+      : m.stack === 'Invoices' ? can('invoices.view')
+        : m.stack === 'Payments' ? can('payments.view')
           : false;
 
   return (
-    <ScrollView style={styles.wrap} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}>
+    <ScrollView style={styles.wrap} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}>
+      <Text style={styles.eyebrow}>Smart Prep · Warehouse</Text>
       <Text style={styles.hello}>Hello, {user?.firstName || 'there'}</Text>
       <Text style={styles.role}>{(roles.length ? roles : [user?.role]).filter(Boolean).join(' · ')}</Text>
       <Text style={styles.sub}>{company ? company.name : 'All companies'}</Text>
@@ -53,16 +61,16 @@ export function DashboardScreen() {
       <View style={styles.grid}>
         {Object.entries(kpis).map(([k, v]) => {
           const meta = KPIS[k] ?? { label: k };
-          const openable = tabVisible(meta.tab);
+          const canOpen = openable(meta);
           return (
             <Pressable
               key={k}
-              style={styles.card}
-              disabled={!openable}
-              onPress={() => meta.tab && nav.navigate('Main', { screen: meta.tab, params: meta.params })}
+              style={({ pressed }) => [styles.card, pressed && canOpen && { opacity: 0.85 }]}
+              disabled={!canOpen}
+              onPress={() => (meta.tab ? nav.navigate('Main', { screen: meta.tab, params: meta.params }) : meta.stack && nav.navigate(meta.stack, meta.params))}
             >
-              <Text style={styles.value}>{v}</Text>
               <Text style={styles.label}>{meta.label}</Text>
+              <Text style={[styles.value, meta.tone && Number(v) > 0 ? { color: meta.tone } : null]}>{v}</Text>
             </Pressable>
           );
         })}
@@ -107,26 +115,31 @@ export function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: colors.surface, padding: 16 },
-  hello: { fontSize: 22, fontWeight: '700', color: colors.navy },
+  wrap: { flex: 1, backgroundColor: colors.surface },
+  // Padding on the content, not the ScrollView: Android clips a ScrollView's
+  // own bottom padding, which cut "Sign out" in half.
+  content: { padding: 16, paddingBottom: 32 },
+  eyebrow: { fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: colors.amber, fontWeight: '700' },
+  hello: { fontSize: 24, fontWeight: '800', color: colors.navy, marginTop: 4 },
   role: { color: colors.amber, fontWeight: '600', marginTop: 4 },
-  sub: { color: '#64748b', marginBottom: 16, marginTop: 2 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  card: { width: '47%', backgroundColor: '#fff', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: colors.border },
-  value: { fontSize: 28, fontWeight: '700', color: colors.navy },
-  label: { color: '#64748b', marginTop: 4, fontSize: 12 },
+  sub: { color: '#7C7768', marginBottom: 16, marginTop: 2 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 10 },
+  card: { width: '48.5%', backgroundColor: colors.panel, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: colors.border, gap: 6 },
+  // Small capitals over a big number, as the design's KPI cards.
+  label: { color: colors.muted, fontSize: 10, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
+  value: { fontSize: 28, fontWeight: '800', color: colors.navy },
   quick: { marginTop: 18, gap: 8 },
-  quickBtn: { backgroundColor: colors.navy, borderRadius: 10, padding: 13, alignItems: 'center' },
-  quickText: { color: '#fff', fontWeight: '700' },
+  quickBtn: { backgroundColor: colors.amber, borderRadius: 10, padding: 14, alignItems: 'center' },
+  quickText: { color: colors.navy, fontWeight: '700', textAlign: 'center' },
   logout: { marginTop: 24, alignSelf: 'flex-start', padding: 10 },
-  logoutText: { color: '#b91c1c', fontWeight: '600' },
+  logoutText: { color: '#B4472F', fontWeight: '600' },
   // Which backend this build talks to — hidden in prod via SHOW_ENV_BADGE.
   envBadge: {
     marginTop: 8,
     marginBottom: 24,
     padding: 10,
     borderRadius: 8,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: '#EFECE3',
     borderWidth: 1,
     borderColor: colors.border,
   },

@@ -75,7 +75,7 @@ export function ProductsScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.surface }}>
-      <SearchInput value={search} onChangeText={setSearch} onSubmit={load} placeholder="Product ID, name, SKU, ASIN, FNSKU…" />
+      <SearchInput value={search} onChangeText={setSearch} onSubmit={load} placeholder="Product ID, name, SKU, ASIN, FNSKU…" scannable />
       {companies.length > 0 && (
         <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
           <PickerField
@@ -127,11 +127,11 @@ export function ProductsScreen() {
 
 const styles = StyleSheet.create({
   card: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  thumb: { width: 60, height: 60, borderRadius: 8, backgroundColor: '#E2E8F0' },
+  thumb: { width: 60, height: 60, borderRadius: 8, backgroundColor: '#EFECE3' },
   thumbEmpty: { borderWidth: 1, borderColor: colors.border },
   id: { fontSize: 11, fontWeight: '800', color: colors.amber, letterSpacing: 0.4 },
   title: { fontWeight: '700', color: colors.navy, marginTop: 1 },
-  meta: { color: '#64748b', marginTop: 2, fontSize: 12 },
+  meta: { color: '#7C7768', marginTop: 2, fontSize: 12 },
   summary: { color: colors.muted, fontSize: 12, paddingHorizontal: 16, paddingBottom: 2 },
-  empty: { textAlign: 'center', color: '#64748b', marginTop: 40 },
+  empty: { textAlign: 'center', color: '#7C7768', marginTop: 40 },
 });

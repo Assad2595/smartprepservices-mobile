@@ -82,7 +82,11 @@ export function ShipmentCreateScreen() {
   }, [isAmazonPrep]);
 
   const productOptions = useMemo(
-    () => catalogue.products.map((p) => ({ value: p.id, label: p.title, hint: `SKU ${p.sku}` })),
+    () => catalogue.products.map((p) => ({
+      value: p.id,
+      label: p.title,
+      hint: [`SKU ${p.sku}`, p.fnsku && `FNSKU ${p.fnsku}`, p.asin && `ASIN ${p.asin}`].filter(Boolean).join(' · '),
+    })),
     [catalogue.products],
   );
   const included = catalogue.services.filter(isLocked);
@@ -105,7 +109,8 @@ export function ShipmentCreateScreen() {
   async function submit() {
     if (!companyId) return showAlert('Missing company', 'Select the company this shipment belongs to.');
     if (items.some((it) => !it.product_id)) return showAlert('Missing product', 'Select a product for every line.');
-    if (!shipperPhone.trim()) return showAlert('Missing phone', 'A shipper phone number is required.');
+    // Required from a company user only, as on the server; internal staff may leave it blank.
+    if (ownCompany && !shipperPhone.trim()) return showAlert('Missing phone', 'A shipper phone number is required.');
     if (isAmazonPrep && !trackingNumber.trim()) return showAlert('Missing tracking number', 'Enter the inbound tracking number.');
     if (!isAmazonPrep && !suiteId) return showAlert('Missing suite', 'A suite is required for Receiving & Forwarding shipments.');
     if (catalogue.fnskuRequired && !fnskuLabel) return showAlert('Missing FNSKU label', 'Attach the FNSKU label file.');
@@ -123,7 +128,7 @@ export function ShipmentCreateScreen() {
           shipping_method: shippingMethod || undefined,
           tracking_number: trackingNumber || undefined,
           shipper_company: shipperCompany || undefined,
-          shipper_phone: shipperPhone,
+          shipper_phone: shipperPhone || undefined,
           shipper_address: shipperAddress || undefined,
           items: items.map((it) => ({
             product_id: it.product_id,
@@ -173,6 +178,7 @@ export function ShipmentCreateScreen() {
               onChange={(v) => updateItem(index, { product_id: v ? Number(v) : null })}
               disabled={companyId === null}
               placeholder={productOptions.length ? 'Select product…' : 'No products for this company'}
+              scannable
             />
             {isAmazonPrep ? (
               <FormField label="Expected units" value={item.qty_expected} onChangeText={(v) => updateItem(index, { qty_expected: v })} keyboardType="number-pad" wrapperStyle={{ marginBottom: 0 }} />
@@ -204,7 +210,7 @@ export function ShipmentCreateScreen() {
             placeholder={catalogue.suites.length ? 'Select suite…' : 'No free suites for this company'}
           />
         )}
-        <FormField label="Shipper phone *" value={shipperPhone} onChangeText={setShipperPhone} keyboardType="phone-pad" />
+        <FormField label={ownCompany ? 'Shipper phone *' : 'Shipper phone'} value={shipperPhone} onChangeText={setShipperPhone} keyboardType="phone-pad" />
         <FormField label="Shipper company" value={shipperCompany} onChangeText={setShipperCompany} />
         <FormField label="Shipper address" value={shipperAddress} onChangeText={setShipperAddress} />
         <FormField label="Shipping method" value={shippingMethod} onChangeText={setShippingMethod} placeholder="e.g. UPS Ground" />
@@ -249,7 +255,7 @@ export function ShipmentCreateScreen() {
                 onPress={() => selectRule(service, checked ? null : (defaultRuleFor(service)?.id ?? null))}
                 disabled={rules.length === 0}
               >
-                <View style={[styles.checkbox, checked && styles.checkboxOn]}>{checked && <Text style={{ color: '#fff', fontSize: 12 }}>✓</Text>}</View>
+                <View style={[styles.checkbox, checked && styles.checkboxOn]}>{checked && <Text style={{ color: '#fff', fontSize: 12 }} allowFontScaling={false}>✓</Text>}</View>
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                     <Text style={styles.serviceName}>{service.name}</Text>
@@ -289,13 +295,13 @@ const styles = StyleSheet.create({
   wrap: { flex: 1, backgroundColor: colors.surface },
   sectionLabel: { fontWeight: '700', color: colors.navy, fontSize: 15, marginBottom: 4 },
   metaSmall: { color: colors.muted, fontSize: 12, marginTop: 2 },
-  includedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6, gap: 8 },
-  includedText: { color: colors.navy, fontWeight: '600', flex: 1 },
+  includedRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6, gap: 8 },
+  includedText: { color: colors.navy, fontWeight: '600', flexShrink: 1 },
   serviceName: { fontWeight: '700', color: colors.navy },
   checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 1.5, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' },
   checkboxOn: { backgroundColor: colors.navy, borderColor: colors.navy },
-  ruleRow: { flexDirection: 'row', justifyContent: 'space-between', padding: 10, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
+  ruleRow: { flexDirection: 'row', gap: 8, justifyContent: 'space-between', padding: 10, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
   ruleRowActive: { backgroundColor: colors.navy, borderColor: colors.navy },
-  ruleName: { color: colors.navy, fontWeight: '600' },
+  ruleName: { flexShrink: 1, color: colors.navy, fontWeight: '600' },
   rulePrice: { color: colors.navy, fontWeight: '700' },
 });

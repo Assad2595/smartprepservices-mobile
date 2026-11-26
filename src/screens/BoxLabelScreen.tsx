@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { api, errorMessage } from '../api/client';
 import { colors } from '../config';
@@ -29,17 +29,18 @@ export function BoxLabelScreen() {
   }
 
   return (
-    <View style={styles.wrap}>
+    <ScrollView style={styles.wrap} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>Apply box label — Box #{boxNumber}</Text>
       <Text style={styles.meta}>Confirm the label has been physically applied to this box.</Text>
       <FormField label="Label code (optional)" value={labelCode} onChangeText={setLabelCode} autoCapitalize="characters" />
       <PrimaryButton title="Confirm applied" onPress={submit} busy={busy} />
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: colors.surface, padding: 16 },
+  wrap: { flex: 1, backgroundColor: colors.surface },
+  content: { padding: 16, paddingBottom: 40 },
   title: { fontSize: 18, fontWeight: '700', color: colors.navy, marginBottom: 6 },
   meta: { color: colors.muted, fontSize: 12, marginBottom: 16 },
 });

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { errorMessage } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { colors } from '../config';
@@ -12,7 +12,7 @@ export function LoginScreen() {
   const [busy, setBusy] = useState(false);
 
   return (
-    <View style={styles.wrap}>
+    <ScrollView style={styles.wrap} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Text style={styles.brand}>Smart Prep Services</Text>
       <Text style={styles.sub}>Warehouse management</Text>
       {notice ? <Text style={styles.notice}>{notice}</Text> : null}
@@ -38,17 +38,18 @@ export function LoginScreen() {
           <Text style={styles.btnText}>{busy ? 'Signing in…' : 'Continue'}</Text>
         </Pressable>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: colors.navy, padding: 24, justifyContent: 'center' },
+  wrap: { flex: 1, backgroundColor: colors.navy },
+  content: { flexGrow: 1, padding: 24, justifyContent: 'center' },
   brand: { color: '#fff', fontSize: 28, fontWeight: '700' },
   sub: { color: 'rgba(255,255,255,0.7)', marginBottom: 20, marginTop: 6 },
   notice: { backgroundColor: 'rgba(217,119,6,0.18)', color: '#fff', borderRadius: 10, padding: 12, marginBottom: 14 },
   card: { backgroundColor: '#fff', borderRadius: 16, padding: 16 },
-  label: { marginBottom: 4, color: '#334155', fontWeight: '600' },
+  label: { marginBottom: 4, color: '#4A4A40', fontWeight: '600' },
   input: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, marginBottom: 12 },
   btn: { backgroundColor: colors.navy, borderRadius: 10, padding: 14, alignItems: 'center' },
   btnText: { color: '#fff', fontWeight: '700' },

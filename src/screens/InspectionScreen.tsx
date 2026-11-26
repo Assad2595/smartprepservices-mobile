@@ -32,7 +32,7 @@ export function InspectionScreen() {
   }
 
   return (
-    <ScrollView style={styles.wrap} contentContainerStyle={{ padding: 16 }}>
+    <ScrollView style={styles.wrap} contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>Record inspection</Text>
 
       <Text style={styles.label}>Result</Text>
@@ -53,7 +53,7 @@ export function InspectionScreen() {
 const styles = StyleSheet.create({
   wrap: { flex: 1, backgroundColor: colors.surface },
   title: { fontSize: 20, fontWeight: '700', color: colors.navy, marginBottom: 12 },
-  label: { marginBottom: 6, color: '#334155', fontWeight: '600', fontSize: 13 },
+  label: { marginBottom: 6, color: '#4A4A40', fontWeight: '600', fontSize: 13 },
   choice: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 14, marginBottom: 8, backgroundColor: '#fff' },
   choicePass: { backgroundColor: colors.success, borderColor: colors.success },
   choiceFail: { backgroundColor: colors.danger, borderColor: colors.danger },

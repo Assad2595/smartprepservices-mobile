@@ -36,7 +36,7 @@ export function InvoiceDetailScreen() {
 
   if (!invoice) {
     return (
-      <View style={styles.wrap}>
+      <View style={[styles.wrap, styles.content]}>
         <Text style={{ color: colors.muted }}>Loading…</Text>
       </View>
     );
@@ -73,9 +73,9 @@ export function InvoiceDetailScreen() {
   }
 
   return (
-    <ScrollView style={styles.wrap} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}>
+    <ScrollView style={styles.wrap} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}>
       <View style={styles.headerRow}>
-        <View style={{ flex: 1 }}>
+        <View style={styles.headerMain}>
           <Text style={styles.title}>{invoice.invoice_number}</Text>
           <Text style={styles.meta}>{invoice.company?.name || '—'}</Text>
         </View>
@@ -159,8 +159,11 @@ export function InvoiceDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: colors.surface, padding: 16 },
-  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  wrap: { flex: 1, backgroundColor: colors.surface },
+  content: { padding: 16, paddingBottom: 32 },
+  headerRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10 },
+  // Keeps at least this much room; otherwise the badge drops to the next line.
+  headerMain: { flexGrow: 1, flexShrink: 1, flexBasis: 160 },
   title: { fontSize: 22, fontWeight: '700', color: colors.navy },
   meta: { color: colors.muted, marginTop: 4 },
   metaSmall: { color: colors.muted, fontSize: 12, marginTop: 2 },

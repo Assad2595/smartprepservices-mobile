@@ -12,20 +12,24 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { colors, statusColor } from '../config';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { colors, statusTone, tones } from '../config';
+import { BarcodeScanner } from './BarcodeScanner';
 
+/** Status tag: small capitals on a tint of the status colour (design canvas). */
 export function StatusBadge({ status }: { status?: string | null }) {
-  const bg = statusColor(status);
+  const tone = statusTone(status);
   return (
-    <View style={[badgeStyles.wrap, { backgroundColor: `${bg}1A`, borderColor: bg }]}>
-      <Text style={[badgeStyles.text, { color: bg }]}>{(status ?? '').replaceAll('_', ' ')}</Text>
+    <View style={[badgeStyles.wrap, { backgroundColor: tone.bg }]}>
+      <Text style={[badgeStyles.text, { color: tone.fg }]}>{(status ?? '').replaceAll('_', ' ')}</Text>
     </View>
   );
 }
 
 const badgeStyles = StyleSheet.create({
-  wrap: { alignSelf: 'flex-start', borderWidth: 1, borderRadius: 999, paddingVertical: 4, paddingHorizontal: 10 },
-  text: { fontWeight: '700', fontSize: 12, letterSpacing: 0.3 },
+  // maxWidth: a long status at a large font size must not squeeze the text beside it to nothing.
+  wrap: { alignSelf: 'flex-start', maxWidth: '60%', borderRadius: 6, paddingVertical: 3, paddingHorizontal: 7 },
+  text: { fontWeight: '700', fontSize: 10, letterSpacing: 0.5, textAlign: 'center', textTransform: 'uppercase' },
 });
 
 export function Section({
@@ -53,7 +57,8 @@ export function Section({
 const sectionStyles = StyleSheet.create({
   wrap: { marginTop: 18 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
-  title: { fontWeight: '700', color: colors.navy, fontSize: 15 },
+  // Small capitals, as the design labels each block.
+  title: { flexShrink: 1, fontWeight: '700', color: colors.muted, fontSize: 11, letterSpacing: 0.6, textTransform: 'uppercase' },
 });
 
 export function EmptyRow({ text }: { text: string }) {
@@ -69,14 +74,14 @@ export function FormField({
   return (
     <View style={[fieldStyles.wrap, wrapperStyle]}>
       <Text style={fieldStyles.label}>{label}</Text>
-      <TextInput style={[fieldStyles.input, style]} placeholderTextColor="#94A3B8" {...inputProps} />
+      <TextInput style={[fieldStyles.input, style]} placeholderTextColor="#9B9686" {...inputProps} />
     </View>
   );
 }
 
 const fieldStyles = StyleSheet.create({
   wrap: { marginBottom: 12 },
-  label: { marginBottom: 4, color: '#334155', fontWeight: '600', fontSize: 13 },
+  label: { marginBottom: 4, color: '#4A4A40', fontWeight: '600', fontSize: 13 },
   input: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, backgroundColor: '#fff' },
 });
 
@@ -107,20 +112,21 @@ export function PrimaryButton({
       ]}
     >
       {busy ? (
-        <ActivityIndicator color={isOutline ? colors.navy : '#fff'} />
+        <ActivityIndicator color={isDanger ? '#fff' : colors.navy} />
       ) : (
-        <Text style={[btnStyles.text, isOutline && btnStyles.textOutline]}>{title}</Text>
+        <Text style={[btnStyles.text, isOutline && btnStyles.textOutline, isDanger && { color: '#fff' }]}>{title}</Text>
       )}
     </Pressable>
   );
 }
 
+// The main action is orange with ink text, as in the design; outline is white on the warm border.
 const btnStyles = StyleSheet.create({
-  base: { backgroundColor: colors.navy, borderRadius: 10, paddingVertical: 13, alignItems: 'center', marginTop: 6 },
-  outline: { backgroundColor: '#fff', borderWidth: 1, borderColor: colors.navy },
+  base: { backgroundColor: colors.amber, borderRadius: 10, paddingVertical: 14, paddingHorizontal: 12, alignItems: 'center', marginTop: 6 },
+  outline: { backgroundColor: colors.panel, borderWidth: 1, borderColor: colors.border },
   danger: { backgroundColor: colors.danger },
   disabled: { opacity: 0.5 },
-  text: { color: '#fff', fontWeight: '700' },
+  text: { color: colors.navy, fontWeight: '700', fontSize: 15, textAlign: 'center' },
   textOutline: { color: colors.navy },
 });
 
@@ -156,23 +162,28 @@ export function PhotoGrid({
 }
 
 const photoStyles = StyleSheet.create({
-  thumb: { width: 84, height: 84, borderRadius: 10, backgroundColor: '#E2E8F0' },
+  thumb: { width: 84, height: 84, borderRadius: 10, backgroundColor: '#EFECE3' },
   placeholder: { alignItems: 'center', justifyContent: 'center' },
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.9)', alignItems: 'center', justifyContent: 'center' },
   full: { width: '100%', height: '80%' },
 });
 
 export function Chip({ label, tone = 'default' }: { label: string; tone?: 'default' | 'amber' | 'success' | 'muted' }) {
-  const bg = { default: colors.navy, amber: colors.amber, success: colors.success, muted: colors.muted }[tone];
+  const t = {
+    default: { fg: colors.navy, bg: colors.neutralBg },
+    amber: tones.active,
+    success: tones.good,
+    muted: tones.neutral,
+  }[tone];
   return (
-    <View style={[chipStyles.wrap, { backgroundColor: `${bg}1A` }]}>
-      <Text style={[chipStyles.text, { color: bg }]}>{label}</Text>
+    <View style={[chipStyles.wrap, { backgroundColor: t.bg }]}>
+      <Text style={[chipStyles.text, { color: t.fg }]}>{label}</Text>
     </View>
   );
 }
 
 const chipStyles = StyleSheet.create({
-  wrap: { borderRadius: 999, paddingVertical: 3, paddingHorizontal: 8, alignSelf: 'flex-start' },
+  wrap: { borderRadius: 999, paddingVertical: 3, paddingHorizontal: 8, alignSelf: 'flex-start', flexShrink: 1 },
   text: { fontSize: 11, fontWeight: '700' },
 });
 
@@ -191,6 +202,7 @@ export function PickerField({
   placeholder = 'Select…',
   disabled,
   wrapperStyle,
+  scannable = false,
 }: {
   label: string;
   value: string | number | null | undefined;
@@ -199,15 +211,31 @@ export function PickerField({
   placeholder?: string;
   disabled?: boolean;
   wrapperStyle?: ViewStyle;
+  /** Adds a scan icon: the scanned code searches the list, and a single match is picked. */
+  scannable?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [scanning, setScanning] = useState(false);
   const selected = options.find((o) => String(o.value) === String(value));
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+  const matching = (text: string) => {
+    const q = text.trim().toLowerCase();
     if (!q) return options;
     return options.filter((o) => `${o.label} ${o.hint ?? ''}`.toLowerCase().includes(q));
-  }, [options, query]);
+  };
+  const filtered = useMemo(() => matching(query), [options, query]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const onScanned = (code: string) => {
+    setScanning(false);
+    const hits = matching(code);
+    if (hits.length === 1) {
+      onChange(hits[0].value, hits[0]);
+      setQuery('');
+      setOpen(false);
+    } else {
+      setQuery(code);
+    }
+  };
 
   return (
     <View style={[fieldStyles.wrap, wrapperStyle]}>
@@ -217,7 +245,7 @@ export function PickerField({
         onPress={() => setOpen(true)}
         style={[fieldStyles.input, pickerStyles.trigger, disabled && { opacity: 0.5 }]}
       >
-        <Text style={{ color: selected ? '#0F172A' : '#94A3B8', flex: 1 }} numberOfLines={1}>
+        <Text style={{ color: selected ? '#1B2430' : '#9B9686', flex: 1 }} numberOfLines={1}>
           {selected ? selected.label : placeholder}
         </Text>
         <Text style={{ color: colors.muted }}>▾</Text>
@@ -230,15 +258,31 @@ export function PickerField({
               <Text style={{ color: colors.amber, fontWeight: '700' }}>Close</Text>
             </Pressable>
           </View>
-          {options.length > 8 && (
-            <TextInput
-              style={[fieldStyles.input, { marginHorizontal: 16, marginBottom: 8 }]}
-              placeholder="Search…"
-              placeholderTextColor="#94A3B8"
-              value={query}
-              onChangeText={setQuery}
-              autoFocus
-            />
+          {(options.length > 8 || scannable) && (
+            <View style={[searchStyles.row, { marginTop: 0, marginBottom: 8 }]}>
+              <TextInput
+                style={[fieldStyles.input, searchStyles.input, scannable && searchStyles.withScan]}
+                placeholder="Search…"
+                placeholderTextColor="#9B9686"
+                value={query}
+                onChangeText={setQuery}
+                autoFocus={!scannable}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              {scannable && (
+                <Pressable
+                  style={({ pressed }) => [searchStyles.scan, pressed && { opacity: 0.7 }]}
+                  onPress={() => setScanning(true)}
+                  accessibilityLabel="Scan a barcode"
+                >
+                  <Ionicons name="barcode-outline" size={24} color={colors.navy} />
+                </Pressable>
+              )}
+            </View>
+          )}
+          {scannable && (
+            <BarcodeScanner visible={scanning} onClose={() => setScanning(false)} onScanned={onScanned} />
           )}
           <FlatList
             data={filtered}
@@ -304,7 +348,15 @@ export function FilterChips<T extends string>({
   onChange: (key: T) => void;
 }) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={chipRowStyles.row}>
+    // flexGrow 0: a horizontal ScrollView in a column otherwise takes a share
+    // of the screen's height, which stretched the chips into tall ovals on one
+    // screen and squashed them (text cut in half) on another.
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={chipRowStyles.scroll}
+      contentContainerStyle={chipRowStyles.row}
+    >
       {options.map((f) => {
         const active = value === f.key;
         return (
@@ -318,44 +370,90 @@ export function FilterChips<T extends string>({
 }
 
 const chipRowStyles = StyleSheet.create({
-  row: { paddingHorizontal: 16, paddingVertical: 8, gap: 8 },
-  chip: { borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 12, backgroundColor: '#fff' },
-  chipActive: { backgroundColor: colors.navy, borderColor: colors.navy },
-  text: { color: colors.navy, fontWeight: '600', fontSize: 12 },
-  textActive: { color: '#fff' },
+  scroll: { flexGrow: 0, flexShrink: 0 },
+  row: { paddingHorizontal: 16, paddingVertical: 8, gap: 8, alignItems: 'center' },
+  // The chosen filter is orange with ink text; the rest white on the warm border (design canvas).
+  chip: { borderWidth: 1, borderColor: colors.border, borderRadius: 20, paddingVertical: 7, paddingHorizontal: 14, backgroundColor: colors.panel },
+  chipActive: { backgroundColor: colors.amber, borderColor: colors.amber },
+  text: { color: colors.muted, fontWeight: '600', fontSize: 12 },
+  textActive: { color: colors.navy, fontWeight: '700' },
 });
 
-/** Search box; the caller decides when to fire (onSubmit / effect). */
+/**
+ * Search box; the caller decides when to fire (onSubmit / effect).
+ *
+ * scannable adds a scan icon: the camera reads a barcode and its text
+ * becomes the search, exactly as if typed — the screens already search
+ * whenever the text changes.
+ */
 export function SearchInput({
   value,
   onChangeText,
   placeholder = 'Search…',
   onSubmit,
+  scannable = false,
 }: {
   value: string;
   onChangeText: (v: string) => void;
   placeholder?: string;
   onSubmit?: () => void;
+  scannable?: boolean;
 }) {
+  const [scanning, setScanning] = useState(false);
+
   return (
-    <TextInput
-      style={[fieldStyles.input, { marginHorizontal: 16, marginTop: 12 }]}
-      placeholder={placeholder}
-      placeholderTextColor="#94A3B8"
-      value={value}
-      onChangeText={onChangeText}
-      onSubmitEditing={onSubmit}
-      returnKeyType="search"
-      autoCapitalize="none"
-      autoCorrect={false}
-      clearButtonMode="while-editing"
-    />
+    <View style={searchStyles.row}>
+      <View style={searchStyles.icon} pointerEvents="none">
+        <Ionicons name="search-outline" size={17} color={colors.muted} />
+      </View>
+      <TextInput
+        style={[fieldStyles.input, searchStyles.input, scannable && searchStyles.withScan]}
+        placeholder={placeholder}
+        placeholderTextColor="#9B9686"
+        value={value}
+        onChangeText={onChangeText}
+        onSubmitEditing={onSubmit}
+        returnKeyType="search"
+        autoCapitalize="none"
+        autoCorrect={false}
+        clearButtonMode="while-editing"
+      />
+      {scannable && (
+        <>
+          <Pressable
+            style={({ pressed }) => [searchStyles.scan, pressed && { opacity: 0.7 }]}
+            onPress={() => setScanning(true)}
+            accessibilityLabel="Scan a barcode"
+          >
+            <Ionicons name="barcode-outline" size={24} color={colors.navy} />
+          </Pressable>
+          <BarcodeScanner
+            visible={scanning}
+            onClose={() => setScanning(false)}
+            onScanned={(code) => {
+              setScanning(false);
+              onChangeText(code);
+            }}
+          />
+        </>
+      )}
+    </View>
   );
 }
 
+const searchStyles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'stretch', gap: 8, marginHorizontal: 16, marginTop: 12 },
+  // Room on the left for the search icon, which sits inside the box.
+  input: { flex: 1, paddingLeft: 40 },
+  icon: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 40, alignItems: 'center', justifyContent: 'center', zIndex: 1 },
+  // The scan icon sits inside the right end of the box; the text stops short of it.
+  withScan: { paddingRight: 52 },
+  scan: { position: 'absolute', right: 0, top: 0, bottom: 0, width: 48, alignItems: 'center', justifyContent: 'center' },
+});
+
 /** Label on the left, value on the right — detail screens are mostly this. */
 export function KeyValue({ label, value, tone }: { label: string; value?: React.ReactNode; tone?: 'danger' | 'success' }) {
-  const color = tone === 'danger' ? colors.danger : tone === 'success' ? colors.success : '#0F172A';
+  const color = tone === 'danger' ? colors.danger : tone === 'success' ? colors.success : '#1B2430';
   const plain = typeof value === 'string' || typeof value === 'number' || value == null;
   return (
     <View style={kvStyles.row}>
@@ -365,7 +463,7 @@ export function KeyValue({ label, value, tone }: { label: string; value?: React.
           {value ?? '—'}
         </Text>
       ) : (
-        value
+        <View style={kvStyles.node}>{value}</View>
       )}
     </View>
   );
@@ -376,30 +474,35 @@ const kvStyles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, paddingVertical: 6,
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border,
   },
-  label: { color: colors.muted, fontSize: 13, flexShrink: 0 },
+  label: { color: colors.muted, fontSize: 13, flexShrink: 1, maxWidth: '50%' },
   value: { fontWeight: '600', fontSize: 13, textAlign: 'right', flex: 1 },
+  node: { flexShrink: 1 },
 });
 
-/** Card container used by every list row and detail block. */
-export function Card({ children, style, onPress }: { children: React.ReactNode; style?: ViewStyle; onPress?: () => void }) {
+/**
+ * Card container used by every list row and detail block. edge: a status
+ * colour shown as a thick left border, as list rows carry in the design.
+ */
+export function Card({ children, style, onPress, edge }: { children: React.ReactNode; style?: ViewStyle; onPress?: () => void; edge?: string }) {
+  const look = [cardStyles.card, edge ? { borderLeftWidth: 4, borderLeftColor: edge } : null, style];
   if (onPress) {
     return (
-      <Pressable style={[cardStyles.card, style]} onPress={onPress}>
+      <Pressable style={({ pressed }) => [...look, pressed && { opacity: 0.85 }]} onPress={onPress}>
         {children}
       </Pressable>
     );
   }
-  return <View style={[cardStyles.card, style]}>{children}</View>;
+  return <View style={look}>{children}</View>;
 }
 
 const cardStyles = StyleSheet.create({
-  card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: colors.border },
+  card: { backgroundColor: colors.panel, borderRadius: 12, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: colors.border },
 });
 
 /** Header-bar "+ New" button, shown only when the caller has the permission. */
 export function HeaderAction({ title, onPress }: { title: string; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} hitSlop={10} style={{ paddingHorizontal: 4 }}>
+    <Pressable onPress={onPress} hitSlop={10} style={{ paddingHorizontal: 4, marginRight: 12 }}>
       <Text style={{ color: colors.amber, fontWeight: '700' }}>{title}</Text>
     </Pressable>
   );

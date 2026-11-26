@@ -91,8 +91,11 @@ android {
         applicationId 'com.smartprepservices.mobile'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0.0"
+        // The build number (v1, v2, v3…): raise it in app.json for every new build.
+        versionCode new groovy.json.JsonSlurper().parse(new File(rootDir, "../app.json")).expo.android.versionCode
+        versionName "1.0"
+        // Phones only: also drops the emulator (x86) files that libraries ship ready-built.
+        ndk { abiFilters(*findProperty("reactNativeArchitectures").split(",")) }
     }
     signingConfigs {
         debug {

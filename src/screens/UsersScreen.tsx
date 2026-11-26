@@ -70,7 +70,7 @@ export function UsersScreen() {
         renderItem={({ item }) => (
           <Card onPress={() => nav.navigate('UserDetail', { id: item.id })} style={styles.card}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{`${item.first_name?.[0] ?? ''}${item.last_name?.[0] ?? ''}`.toUpperCase() || '?'}</Text>
+              <Text style={styles.avatarText} allowFontScaling={false}>{`${item.first_name?.[0] ?? ''}${item.last_name?.[0] ?? ''}`.toUpperCase() || '?'}</Text>
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.name}>{`${item.first_name ?? ''} ${item.last_name ?? ''}`.trim() || item.email}</Text>
@@ -93,8 +93,8 @@ const styles = StyleSheet.create({
   avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.navy, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#fff', fontWeight: '800' },
   name: { fontWeight: '700', color: colors.navy },
-  meta: { color: '#64748b', marginTop: 2, fontSize: 12 },
+  meta: { color: '#7C7768', marginTop: 2, fontSize: 12 },
   chips: { flexDirection: 'row', gap: 6, marginTop: 6, flexWrap: 'wrap' },
   summary: { color: colors.muted, fontSize: 12, paddingHorizontal: 16, paddingBottom: 2 },
-  empty: { textAlign: 'center', color: '#64748b', marginTop: 40 },
+  empty: { textAlign: 'center', color: '#7C7768', marginTop: 40 },
 });

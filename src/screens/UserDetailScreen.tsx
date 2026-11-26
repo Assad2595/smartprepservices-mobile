@@ -35,17 +35,17 @@ export function UserDetailScreen() {
 
   if (!user) {
     return (
-      <View style={styles.wrap}>
+      <View style={[styles.wrap, styles.content]}>
         <Text style={{ color: colors.muted }}>Loading…</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.wrap} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}>
+    <ScrollView style={styles.wrap} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}>
       <View style={styles.head}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{`${user.first_name?.[0] ?? ''}${user.last_name?.[0] ?? ''}`.toUpperCase() || '?'}</Text>
+          <Text style={styles.avatarText} allowFontScaling={false}>{`${user.first_name?.[0] ?? ''}${user.last_name?.[0] ?? ''}`.toUpperCase() || '?'}</Text>
         </View>
         <Text style={styles.title}>{fullName}</Text>
         <View style={styles.chips}>
@@ -92,7 +92,8 @@ export function UserDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: colors.surface, padding: 16 },
+  wrap: { flex: 1, backgroundColor: colors.surface },
+  content: { padding: 16, paddingBottom: 32 },
   head: { alignItems: 'center', marginTop: 4 },
   avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: colors.navy, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#fff', fontSize: 26, fontWeight: '800' },
@@ -102,6 +103,6 @@ const styles = StyleSheet.create({
   actionBtn: { flex: 1, backgroundColor: '#fff', borderRadius: 10, borderWidth: 1, borderColor: colors.navy, paddingVertical: 10, alignItems: 'center' },
   actionText: { color: colors.navy, fontWeight: '700' },
   openCompany: { marginTop: 18, backgroundColor: colors.navy, borderRadius: 10, paddingVertical: 13, alignItems: 'center' },
-  openCompanyText: { color: '#fff', fontWeight: '700' },
+  openCompanyText: { color: '#fff', fontWeight: '700', textAlign: 'center' },
   note: { color: colors.muted, fontSize: 12, marginTop: 14, textAlign: 'center' },
 });

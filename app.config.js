@@ -48,6 +48,7 @@ module.exports = ({ config }) => ({
   extra: {
     ...config.extra,
     appEnv: APP_ENV,
+    build: config.android?.versionCode,
     envLabel: process.env.ENV_LABEL || APP_ENV.toUpperCase(),
     apiUrl: API_URL,
     requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS || 20000),

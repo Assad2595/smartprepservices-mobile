@@ -64,7 +64,7 @@ export function ReceivingScreen() {
 
   if (record) {
     return (
-      <ScrollView style={styles.wrap} contentContainerStyle={{ padding: 16 }}>
+      <ScrollView style={styles.wrap} contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>Receiving recorded</Text>
         <Text style={styles.meta}>Attach photos of the received packages, then finish.</Text>
         <Section title="Photos">
@@ -77,7 +77,7 @@ export function ReceivingScreen() {
   }
 
   return (
-    <ScrollView style={styles.wrap} contentContainerStyle={{ padding: 16 }}>
+    <ScrollView style={styles.wrap} contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>Record receiving</Text>
       <FormField label="Carrier" value={carrierName} onChangeText={setCarrierName} placeholder="e.g. UPS" />
       <FormField label="Tracking number" value={trackingNumber} onChangeText={setTrackingNumber} autoCapitalize="characters" />

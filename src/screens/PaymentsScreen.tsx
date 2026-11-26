@@ -83,7 +83,7 @@ export function PaymentsScreen() {
 const styles = StyleSheet.create({
   rowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
   title: { fontWeight: '700', color: colors.navy },
-  meta: { color: '#64748b', marginTop: 4 },
+  meta: { color: '#7C7768', marginTop: 4 },
   metaSmall: { color: colors.muted, fontSize: 12, marginTop: 6 },
-  empty: { textAlign: 'center', color: '#64748b', marginTop: 40 },
+  empty: { textAlign: 'center', color: '#7C7768', marginTop: 40 },
 });

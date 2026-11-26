@@ -55,7 +55,7 @@ export function BoxFormScreen() {
   }
 
   return (
-    <ScrollView style={styles.wrap} contentContainerStyle={{ padding: 16 }}>
+    <ScrollView style={styles.wrap} contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>Add box</Text>
 
       <View style={styles.dimsRow}>
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   wrap: { flex: 1, backgroundColor: colors.surface },
   title: { fontSize: 20, fontWeight: '700', color: colors.navy, marginBottom: 12 },
   meta: { color: colors.muted, fontSize: 12 },
-  dimsRow: { flexDirection: 'row', gap: 8 },
+  dimsRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
   dimField: { flex: 1 },
   itemRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#fff',

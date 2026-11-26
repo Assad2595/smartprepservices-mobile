@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { api, errorMessage } from '../api/client';
 import { colors } from '../config';
 import { dateLabel } from '../shared/format';
@@ -34,10 +34,10 @@ export const NO_STOCK: Stock = { expected: 0, in_warehouse: 0, preparing: 0, shi
 function Tile({ value, label, tone, strong }: { value: number; label: string; tone?: 'bad'; strong?: boolean }) {
   return (
     <View style={[styles.tile, strong && styles.tileStrong]}>
-      <Text style={[styles.tileValue, strong && styles.tileValueStrong, tone === 'bad' && value > 0 && { color: colors.danger }, value === 0 && !strong && { color: colors.muted }]}>
+      <Text style={[styles.tileValue, strong && styles.tileValueStrong, tone === 'bad' && value > 0 && { color: colors.danger }, value === 0 && !strong && { color: colors.muted }]} numberOfLines={1} adjustsFontSizeToFit>
         {value}
       </Text>
-      <Text style={[styles.tileLabel, strong && { color: 'rgba(255,255,255,0.8)' }]}>{label}</Text>
+      <Text style={[styles.tileLabel, strong && { color: 'rgba(255,255,255,0.8)' }]} numberOfLines={1} adjustsFontSizeToFit>{label}</Text>
     </View>
   );
 }
@@ -171,7 +171,8 @@ export function AdjustStockSheet({
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.backdrop}>
-        <View style={styles.sheet}>
+        {/* Scrolls: with a large font and the keyboard up it is taller than the screen. */}
+        <ScrollView style={styles.sheet} contentContainerStyle={styles.sheetContent} keyboardShouldPersistTaps="handled">
           <View style={styles.sheetHead}>
             <Text style={styles.sheetTitle}>Adjust stock</Text>
             <Pressable onPress={onClose} hitSlop={12}>
@@ -198,7 +199,7 @@ export function AdjustStockSheet({
           </Text>
 
           <PrimaryButton title={adding ? 'Add to stock' : 'Take away'} onPress={save} busy={busy} disabled={!valid} />
-        </View>
+        </ScrollView>
       </View>
     </Modal>
   );
@@ -221,17 +222,18 @@ const styles = StyleSheet.create({
   histDot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
   histTop: { flexDirection: 'row', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' },
   histKind: { fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.4 },
-  histText: { fontWeight: '700', color: '#0F172A' },
+  histText: { fontWeight: '700', color: '#1B2430' },
   histMeta: { color: colors.muted, fontSize: 12, marginTop: 2 },
   histLink: { color: colors.navy, fontSize: 12, fontWeight: '700', marginTop: 2 },
 
   backdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.5)', justifyContent: 'flex-end' },
-  sheet: { backgroundColor: colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 18, paddingBottom: 28 },
+  sheet: { flexGrow: 0, backgroundColor: colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20 },
+  sheetContent: { padding: 18, paddingBottom: 28 },
   sheetHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   sheetTitle: { fontSize: 18, fontWeight: '800', color: colors.navy },
   sheetClose: { color: colors.amber, fontWeight: '700' },
   sheetSub: { color: colors.muted, marginTop: 2, marginBottom: 14 },
-  seg: { flexDirection: 'row', backgroundColor: '#E2E8F0', borderRadius: 10, padding: 3, marginBottom: 14 },
+  seg: { flexDirection: 'row', backgroundColor: '#EFECE3', borderRadius: 10, padding: 3, marginBottom: 14 },
   segBtn: { flex: 1, paddingVertical: 9, borderRadius: 8, alignItems: 'center' },
   segBtnOn: { backgroundColor: '#fff' },
   segText: { fontWeight: '700', color: colors.muted },

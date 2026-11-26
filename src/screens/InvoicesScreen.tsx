@@ -98,10 +98,10 @@ export function InvoicesScreen() {
 
 const styles = StyleSheet.create({
   rowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
-  rowBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, gap: 8 },
+  rowBottom: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, gap: 8 },
   title: { fontWeight: '700', color: colors.navy },
-  meta: { color: '#64748b', marginTop: 4 },
-  metaSmall: { color: colors.muted, fontSize: 12, flexShrink: 1, textAlign: 'right' },
+  meta: { color: '#7C7768', marginTop: 4 },
+  metaSmall: { color: colors.muted, fontSize: 12, flexGrow: 1, flexShrink: 1, flexBasis: 150, textAlign: 'right' },
   amount: { fontWeight: '700', color: colors.navy, fontSize: 16 },
-  empty: { textAlign: 'center', color: '#64748b', marginTop: 40 },
+  empty: { textAlign: 'center', color: '#7C7768', marginTop: 40 },
 });

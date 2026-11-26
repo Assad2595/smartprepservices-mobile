@@ -57,7 +57,7 @@ export function CompaniesScreen() {
           return (
             <Card onPress={() => nav.navigate('CompanyDetail', { id: item.id })}>
               <View style={styles.top}>
-                <View style={{ flex: 1 }}>
+                <View style={styles.who}>
                   <Text style={styles.name}>{item.name}</Text>
                   {!!item.contact_person && <Text style={styles.meta}>{item.contact_person}</Text>}
                   {!!item.email && <Text style={styles.meta} numberOfLines={1}>{item.email}</Text>}
@@ -83,13 +83,14 @@ export function CompaniesScreen() {
 }
 
 const styles = StyleSheet.create({
-  top: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
+  top: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'flex-start' },
+  who: { flexGrow: 1, flexShrink: 1, flexBasis: 140 },
   name: { fontWeight: '700', color: colors.navy, fontSize: 15 },
-  meta: { color: '#64748b', marginTop: 2, fontSize: 12 },
+  meta: { color: '#7C7768', marginTop: 2, fontSize: 12 },
   balance: { fontWeight: '800', color: colors.navy, fontSize: 16 },
   balanceLabel: { color: colors.muted, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.4 },
   bottom: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10, flexWrap: 'wrap' },
   counts: { color: colors.muted, fontSize: 12, flexShrink: 1 },
   summary: { color: colors.muted, fontSize: 12, paddingHorizontal: 16, paddingBottom: 2 },
-  empty: { textAlign: 'center', color: '#64748b', marginTop: 40 },
+  empty: { textAlign: 'center', color: '#7C7768', marginTop: 40 },
 });

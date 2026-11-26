@@ -42,7 +42,7 @@ export function ProductDetailScreen() {
 
   if (!product) {
     return (
-      <View style={styles.wrap}>
+      <View style={[styles.wrap, styles.content]}>
         <Text style={{ color: colors.muted }}>Loading…</Text>
       </View>
     );
@@ -52,7 +52,7 @@ export function ProductDetailScreen() {
   const dimUnit = product.dimension_unit || 'in';
 
   return (
-    <ScrollView style={styles.wrap} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}>
+    <ScrollView style={styles.wrap} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}>
       <Text style={styles.title}>{product.title}</Text>
       <View style={{ flexDirection: 'row', gap: 8, marginTop: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <Chip label={product.is_active ? 'ACTIVE' : 'INACTIVE'} tone={product.is_active ? 'success' : 'muted'} />
@@ -112,7 +112,8 @@ export function ProductDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: colors.surface, padding: 16 },
+  wrap: { flex: 1, backgroundColor: colors.surface },
+  content: { padding: 16, paddingBottom: 32 },
   title: { fontSize: 20, fontWeight: '700', color: colors.navy },
-  body: { color: '#0F172A', lineHeight: 20 },
+  body: { color: '#1B2430', lineHeight: 20 },
 });
